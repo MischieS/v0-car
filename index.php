@@ -6,605 +6,548 @@
     <title>Dreams Rent - Premium Car Rental Service</title>
     <?php include('assets/includes/header_link.php') ?>
     <style>
-        /* Custom styles for modern homepage */
-        .hero-section {
-            background: linear-gradient(135deg, #2a3f90 0%, #1e2d68 100%);
-            padding: 80px 0;
-            position: relative;
-            overflow: hidden;
+        /* Minimal modern styles */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f59e0b;
+            --light: #f9fafb;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --radius: 8px;
         }
         
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 60%;
-            height: 100%;
-            background: url('assets/img/hero-pattern.png') no-repeat;
-            background-size: cover;
-            opacity: 0.1;
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
+            background-color: #fff;
+        }
+        
+        .section {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .section-title h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+        
+        .section-title p {
+            font-size: 1rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Hero section */
+        .hero-section {
+            background-color: var(--light);
+            padding: 80px 0 60px;
+            position: relative;
         }
         
         .hero-content h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
+            font-size: 2.75rem;
+            font-weight: 800;
             line-height: 1.2;
-            color: #fff;
+            margin-bottom: 20px;
+            color: var(--dark);
         }
         
         .hero-content h1 span {
-            color: #ff9d00;
-            position: relative;
-        }
-        
-        .hero-content h1 span::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: #ff9d00;
-            border-radius: 2px;
+            color: var(--primary);
         }
         
         .hero-content p {
             font-size: 1.1rem;
-            margin-bottom: 2rem;
-            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            color: var(--gray);
             max-width: 90%;
         }
         
-        .hero-image {
-            position: relative;
-            z-index: 1;
-        }
-        
         .hero-image img {
-            max-width: 120%;
-            margin-left: -10%;
-            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.3));
-            animation: float 6s ease-in-out infinite;
+            width: 100%;
+            height: auto;
+            display: block;
         }
         
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        .search-box-modern {
-            background: #fff;
-            border-radius: 16px;
+        /* Search box */
+        .search-container {
+            background-color: #fff;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             padding: 30px;
-            margin-top: -70px;
+            margin-top: 40px;
+        }
+        
+        .search-container h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            height: 48px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            width: 100%;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+        
+        .input-icon-wrapper {
             position: relative;
-            z-index: 99;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
         }
         
-        .search-box-modern .form-group {
-            margin-bottom: 0;
-        }
-        
-        .search-box-modern .form-control {
-            height: 55px;
-            border-radius: 8px;
-            border: 1px solid #e5e5e5;
-            padding-left: 45px;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-        
-        .search-box-modern .form-control:focus {
-            border-color: #2a3f90;
-            box-shadow: 0 0 0 3px rgba(42, 63, 144, 0.1);
-        }
-        
-        .search-box-modern .input-icon {
+        .input-icon {
             position: absolute;
-            left: 15px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #2a3f90;
-            font-size: 18px;
+            color: var(--gray);
         }
         
-        .search-box-modern .btn-search {
-            height: 55px;
-            border-radius: 8px;
-            background: #2a3f90;
-            color: #fff;
+        .input-with-icon {
+            padding-left: 45px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            height: 48px;
+            border-radius: var(--radius);
             font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-            width: 100%;
+            padding: 0 24px;
+            transition: all 0.2s;
+            cursor: pointer;
         }
         
-        .search-box-modern .btn-search:hover {
-            background: #1e2d68;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(42, 63, 144, 0.2);
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
         }
         
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
+        .btn-primary:active {
+            transform: translateY(0);
         }
         
-        .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2a3f90;
-            margin-bottom: 15px;
-            position: relative;
-            display: inline-block;
-        }
-        
-        .section-title h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: #ff9d00;
-            border-radius: 2px;
-        }
-        
-        .section-title p {
-            font-size: 1.1rem;
-            color: #666;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        .featured-car-card {
-            border-radius: 12px;
+        /* Featured cars */
+        .car-card {
+            background-color: #fff;
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: all 0.3s;
-            background: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
-        .featured-car-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        .car-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
         }
         
-        .featured-car-card .car-img {
+        .car-image {
             height: 200px;
             overflow: hidden;
-            position: relative;
         }
         
-        .featured-car-card .car-img img {
+        .car-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: all 0.5s;
+            transition: transform 0.5s;
         }
         
-        .featured-car-card:hover .car-img img {
-            transform: scale(1.1);
+        .car-card:hover .car-image img {
+            transform: scale(1.05);
         }
         
-        .featured-car-card .car-content {
+        .car-details {
             padding: 20px;
-        }
-        
-        .featured-car-card .car-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #2a3f90;
-        }
-        
-        .featured-car-card .car-rating {
-            margin-bottom: 10px;
-            color: #ff9d00;
-        }
-        
-        .featured-car-card .car-features {
+            flex-grow: 1;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            flex-direction: column;
         }
         
-        .featured-car-card .car-feature {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .featured-car-card .car-feature i {
-            margin-right: 5px;
-            color: #2a3f90;
-        }
-        
-        .featured-car-card .car-price {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .featured-car-card .price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2a3f90;
-        }
-        
-        .featured-car-card .price span {
-            font-size: 14px;
-            font-weight: 400;
-            color: #666;
-        }
-        
-        .featured-car-card .btn-book {
-            padding: 8px 20px;
-            background: #2a3f90;
-            color: #fff;
-            border-radius: 6px;
+        .car-title {
+            font-size: 1.25rem;
             font-weight: 600;
-            transition: all 0.3s;
+            margin-bottom: 8px;
+            color: var(--dark);
         }
         
-        .featured-car-card .btn-book:hover {
-            background: #1e2d68;
+        .car-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
-        .how-it-works {
-            background: #f8f9fa;
-            padding: 80px 0;
-        }
-        
-        .step-card {
-            text-align: center;
-            padding: 30px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            position: relative;
-            z-index: 1;
-            height: 100%;
-        }
-        
-        .step-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #2a3f90 0%, #1e2d68 100%);
-            border-radius: 12px;
-            opacity: 0;
-            z-index: -1;
-            transition: all 0.3s;
-        }
-        
-        .step-card:hover::before {
-            opacity: 1;
-        }
-        
-        .step-card:hover {
-            transform: translateY(-10px);
-        }
-        
-        .step-card:hover * {
-            color: #fff;
-        }
-        
-        .step-card .step-icon {
-            width: 80px;
-            height: 80px;
-            background: rgba(42, 63, 144, 0.1);
-            border-radius: 50%;
+        .car-meta-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            transition: all 0.3s;
+            font-size: 0.875rem;
+            color: var(--gray);
         }
         
-        .step-card:hover .step-icon {
-            background: rgba(255, 255, 255, 0.2);
+        .car-meta-item i {
+            margin-right: 5px;
+            color: var(--primary);
+            font-size: 0.875rem;
         }
         
-        .step-card .step-icon i {
-            font-size: 30px;
-            color: #2a3f90;
-            transition: all 0.3s;
+        .car-price {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
         }
         
-        .step-card .step-number {
-            position: absolute;
-            top: -15px;
-            right: -15px;
+        .price-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .price-period {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+        
+        .btn-book {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-book:hover {
+            background-color: var(--primary-dark);
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* How it works */
+        .process-section {
+            background-color: var(--light);
+        }
+        
+        .process-card {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: #fff;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            position: relative;
+        }
+        
+        .process-number {
             width: 40px;
             height: 40px;
-            background: #ff9d00;
+            background-color: var(--primary);
+            color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-weight: 700;
-            font-size: 18px;
-            box-shadow: 0 5px 15px rgba(255, 157, 0, 0.3);
+            font-weight: 600;
+            margin: 0 auto 20px;
         }
         
-        .step-card h3 {
-            font-size: 1.3rem;
+        .process-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .process-description {
+            font-size: 0.95rem;
+            color: var(--gray);
+        }
+        
+        /* CTA section */
+        .cta-section {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 60px 0;
+        }
+        
+        .cta-title {
+            font-size: 2rem;
             font-weight: 700;
             margin-bottom: 15px;
-            color: #2a3f90;
-            transition: all 0.3s;
         }
         
-        .step-card p {
-            font-size: 15px;
-            color: #666;
-            margin-bottom: 0;
-            transition: all 0.3s;
-        }
-        
-        .testimonial-section {
-            padding: 80px 0;
-        }
-        
-        .testimonial-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            margin: 15px;
-            position: relative;
-        }
-        
-        .testimonial-card::before {
-            content: '\f10d';
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: rgba(42, 63, 144, 0.1);
-        }
-        
-        .testimonial-card .testimonial-content {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .testimonial-card .testimonial-user {
-            display: flex;
-            align-items: center;
-        }
-        
-        .testimonial-card .user-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-right: 15px;
-        }
-        
-        .testimonial-card .user-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .testimonial-card .user-info h5 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #2a3f90;
-        }
-        
-        .testimonial-card .user-info p {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 0;
-        }
-        
-        .testimonial-card .rating {
-            color: #ff9d00;
-            margin-top: 5px;
-        }
-        
-        .benefits-section {
-            background: linear-gradient(135deg, #2a3f90 0%, #1e2d68 100%);
-            padding: 80px 0;
-            color: #fff;
-        }
-        
-        .benefit-card {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 30px;
-        }
-        
-        .benefit-card .benefit-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-        
-        .benefit-card .benefit-icon i {
-            font-size: 24px;
-            color: #ff9d00;
-        }
-        
-        .benefit-card .benefit-content h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .benefit-card .benefit-content p {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 0;
-        }
-        
-        .car-categories {
-            padding: 80px 0;
-        }
-        
-        .category-card {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 30px;
-            height: 200px;
-        }
-        
-        .category-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: all 0.5s;
-        }
-        
-        .category-card:hover img {
-            transform: scale(1.1);
-        }
-        
-        .category-card .category-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-            color: #fff;
-        }
-        
-        .category-card .category-content h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .category-card .category-content p {
-            font-size: 14px;
-            margin-bottom: 0;
-        }
-        
-        .cta-section {
-            background: url('assets/img/cta-bg.jpg') no-repeat center center;
-            background-size: cover;
-            padding: 100px 0;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .cta-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(42, 63, 144, 0.9) 0%, rgba(30, 45, 104, 0.9) 100%);
-            z-index: -1;
-        }
-        
-        .cta-content {
-            text-align: center;
-            color: #fff;
-        }
-        
-        .cta-content h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        
-        .cta-content p {
+        .cta-description {
             font-size: 1.1rem;
             margin-bottom: 30px;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
+            opacity: 0.9;
         }
         
         .btn-cta {
-            background: #ff9d00;
-            color: #fff;
-            padding: 12px 30px;
-            border-radius: 8px;
+            background-color: white;
+            color: var(--primary);
+            border: none;
+            height: 48px;
+            border-radius: var(--radius);
             font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-            display: inline-block;
+            padding: 12px 30px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
         }
         
         .btn-cta:hover {
-            background: #e68e00;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            color: #fff;
+            background-color: var(--light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: var(--primary);
+            text-decoration: none;
         }
         
         .btn-cta i {
-            margin-left: 5px;
+            margin-left: 8px;
         }
         
+        /* Filter section */
+        .filter-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+        
+        .range-slider {
+            height: 5px;
+            position: relative;
+            background-color: #e1e1e1;
+            border-radius: 5px;
+        }
+        
+        .range-selected {
+            height: 100%;
+            left: 30%;
+            right: 30%;
+            position: absolute;
+            border-radius: 5px;
+            background-color: var(--primary);
+        }
+        
+        .range-input {
+            position: relative;
+            height: 5px;
+        }
+        
+        .range-input input {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            top: -5px;
+            background: none;
+            pointer-events: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        .range-input input::-webkit-slider-thumb {
+            height: 17px;
+            width: 17px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            background-color: #fff;
+            pointer-events: auto;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+        
+        .range-input input::-moz-range-thumb {
+            height: 17px;
+            width: 17px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            background-color: #fff;
+            pointer-events: auto;
+            -moz-appearance: none;
+            cursor: pointer;
+        }
+        
+        .price-input {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .price-input .field {
+            display: flex;
+            width: 100%;
+            height: 36px;
+            align-items: center;
+        }
+        
+        .field input {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 0 10px;
+            font-size: 0.9rem;
+        }
+        
+        .price-input .separator {
+            width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .checkbox-group {
+            margin-bottom: 5px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--gray);
+        }
+        
+        .checkbox-label input {
+            margin-right: 10px;
+        }
+        
+        .filter-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn-filter {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .btn-filter:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-reset {
+            background-color: transparent;
+            color: var(--gray);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .btn-reset:hover {
+            background-color: var(--light);
+        }
+        
+        /* Responsive */
         @media (max-width: 991px) {
             .hero-content h1 {
-                font-size: 2.5rem;
+                font-size: 2.25rem;
             }
             
-            .hero-image img {
-                max-width: 100%;
-                margin-left: 0;
-                margin-top: 30px;
-            }
-            
-            .search-box-modern {
+            .hero-image {
                 margin-top: 30px;
             }
         }
         
         @media (max-width: 767px) {
+            .section {
+                padding: 40px 0;
+            }
+            
             .hero-section {
-                padding: 50px 0;
+                padding: 40px 0;
             }
             
             .hero-content h1 {
                 font-size: 2rem;
             }
             
-            .section-title h2 {
-                font-size: 2rem;
+            .search-container {
+                padding: 20px;
             }
             
-            .search-box-modern .form-group {
-                margin-bottom: 15px;
-            }
-            
-            .step-card {
-                margin-bottom: 30px;
+            .process-card {
+                margin-bottom: 20px;
             }
         }
     </style>
@@ -621,64 +564,219 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6">
                         <div class="hero-content">
-                            <h1>Drive Your <span>Dreams</span> Today</h1>
-                            <p>Experience premium car rentals with our extensive fleet of luxury, sports, and economy vehicles. Book in seconds and hit the road with confidence.</p>
-                            <a href="booking_list.php" class="btn btn-cta">Explore Cars <i class="fas fa-arrow-right"></i></a>
+                            <h1>Find and book your <span>perfect car</span></h1>
+                            <p>Experience premium car rentals with our extensive fleet of vehicles. Book in seconds and hit the road with confidence.</p>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="hero-image">
-                            <img src="assets/img/car-hero.png" alt="Luxury Car">
+                            <img src="assets/img/car-hero-minimal.png" alt="Car Rental">
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-        <!-- /Hero Section -->
-        
-        <!-- Search Section -->
-        <section class="search-section">
-            <div class="container">
-                <div class="search-box-modern">
-                    <form action="booking_list.php" method="GET">
+                
+                <!-- Search Box -->
+                <div class="search-container">
+                    <h3>Search for available cars</h3>
+                    <form id="searchForm" action="booking_list.php" method="GET">
                         <div class="row">
-                            <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
-                                <div class="form-group position-relative">
-                                    <label for="pickup_location" class="form-label">Pickup Location</label>
-                                    <i class="fas fa-map-marker-alt input-icon"></i>
-                                    <input type="text" class="form-control" id="pickup_location" name="pickup_location" placeholder="Enter city, airport, or address">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="form-group">
+                                    <label for="location" class="form-label">Pickup Location</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-map-marker-alt input-icon"></i>
+                                        <input type="text" id="location" name="location" class="form-control input-with-icon" placeholder="City, Airport, or Address">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
-                                <div class="form-group position-relative">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="form-group">
                                     <label for="pickup_date" class="form-label">Pickup Date</label>
-                                    <i class="fas fa-calendar input-icon"></i>
-                                    <input type="text" class="form-control datetimepicker" id="pickup_date" name="pickup_date" placeholder="Select date">
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-calendar input-icon"></i>
+                                        <input type="text" id="pickup_date" name="pickup_date" class="form-control input-with-icon datepicker" placeholder="Select date" autocomplete="off">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6 mb-3 mb-md-0">
-                                <div class="form-group position-relative">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="form-group">
                                     <label for="return_date" class="form-label">Return Date</label>
-                                    <i class="fas fa-calendar-check input-icon"></i>
-                                    <input type="text" class="form-control datetimepicker" id="return_date" name="return_date" placeholder="Select date">
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-calendar-check input-icon"></i>
+                                        <input type="text" id="return_date" name="return_date" class="form-control input-with-icon datepicker" placeholder="Select date" autocomplete="off">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-lg-2 col-md-6">
-                                <div class="form-group h-100 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-search">
+                                <div class="form-group">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" class="btn-primary w-100">
                                         <i class="fas fa-search me-2"></i> Search
                                     </button>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Advanced Filters (Initially Hidden) -->
+                        <div id="advancedFilters" style="display: none;">
+                            <hr>
+                            <div class="row">
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Car Type</label>
+                                        <select name="car_type" class="form-control">
+                                            <option value="">All Types</option>
+                                            <option value="sedan">Sedan</option>
+                                            <option value="suv">SUV</option>
+                                            <option value="luxury">Luxury</option>
+                                            <option value="sports">Sports</option>
+                                            <option value="convertible">Convertible</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Brand</label>
+                                        <select name="brand" class="form-control">
+                                            <option value="">All Brands</option>
+                                            <?php
+                                            require_once 'backend/db_connect.php';
+                                            $sql = "SELECT DISTINCT brand FROM cars ORDER BY brand";
+                                            $result = $conn->query($sql);
+                                            if ($result && $result->num_rows > 0) {
+                                                while($row = $result->fetch_assoc()) {
+                                                    echo "<option value='" . htmlspecialchars($row['brand']) . "'>" . htmlspecialchars($row['brand']) . "</option>";
+                                                }
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Transmission</label>
+                                        <select name="transmission" class="form-control">
+                                            <option value="">Any</option>
+                                            <option value="automatic">Automatic</option>
+                                            <option value="manual">Manual</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Price Range (per day)</label>
+                                        <div class="price-input">
+                                            <div class="field">
+                                                <input type="number" name="min_price" class="input-min" value="50">
+                                            </div>
+                                            <div class="separator">to</div>
+                                            <div class="field">
+                                                <input type="number" name="max_price" class="input-max" value="500">
+                                            </div>
+                                        </div>
+                                        <div class="range-slider mt-2">
+                                            <div class="range-selected"></div>
+                                        </div>
+                                        <div class="range-input">
+                                            <input type="range" class="range-min" min="0" max="1000" value="50" step="10">
+                                            <input type="range" class="range-max" min="0" max="1000" value="500" step="10">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Features</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="features[]" value="bluetooth"> Bluetooth
+                                            </label>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="features[]" value="navigation"> Navigation
+                                            </label>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="features[]" value="sunroof"> Sunroof
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Fuel Type</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="fuel[]" value="petrol"> Petrol
+                                            </label>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="fuel[]" value="diesel"> Diesel
+                                            </label>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="fuel[]" value="hybrid"> Hybrid
+                                            </label>
+                                        </div>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" name="fuel[]" value="electric"> Electric
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Passengers</label>
+                                        <select name="passengers" class="form-control">
+                                            <option value="">Any</option>
+                                            <option value="2">2 or more</option>
+                                            <option value="4">4 or more</option>
+                                            <option value="5">5 or more</option>
+                                            <option value="7">7 or more</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Sort By</label>
+                                        <select name="sort" class="form-control">
+                                            <option value="price_asc">Price: Low to High</option>
+                                            <option value="price_desc">Price: High to Low</option>
+                                            <option value="rating_desc">Highest Rated</option>
+                                            <option value="newest">Newest Models</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-actions">
+                                <button type="button" class="btn-reset" id="resetFilters">Reset Filters</button>
+                                <button type="submit" class="btn-filter">Apply Filters</button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="#" id="toggleFilters" class="text-primary">
+                                <span id="showFiltersText">Show Advanced Filters</span>
+                                <span id="hideFiltersText" style="display: none;">Hide Advanced Filters</span>
+                                <i class="fas fa-chevron-down ms-1" id="filterIcon"></i>
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>
         </section>
-        <!-- /Search Section -->
+        <!-- /Hero Section -->
         
         <!-- Featured Cars Section -->
-        <section class="featured-cars-section py-5">
+        <section class="section">
             <div class="container">
                 <div class="section-title">
                     <h2>Featured Cars</h2>
@@ -686,173 +784,186 @@
                 </div>
                 
                 <div class="row">
-                    <!-- Featured Car 1 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="featured-car-card">
-                            <div class="car-img">
+                    <?php
+                    require_once 'backend/db_connect.php';
+                    
+                    // Get featured cars from database
+                    $sql = "SELECT * FROM cars WHERE featured = 1 LIMIT 6";
+                    $result = $conn->query($sql);
+                    
+                    if ($result && $result->num_rows > 0) {
+                        while($car = $result->fetch_assoc()) {
+                    ?>
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="car-card">
+                            <div class="car-image">
+                                <img src="<?php echo htmlspecialchars($car['image'] ?? 'assets/img/cars/default-car.jpg'); ?>" alt="<?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?>">
+                            </div>
+                            <div class="car-details">
+                                <h3 class="car-title"><?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?></h3>
+                                <div class="car-meta">
+                                    <div class="car-meta-item">
+                                        <i class="fas fa-car"></i> <?php echo htmlspecialchars($car['type'] ?? 'Sedan'); ?>
+                                    </div>
+                                    <div class="car-meta-item">
+                                        <i class="fas fa-cog"></i> <?php echo htmlspecialchars($car['transmission'] ?? 'Automatic'); ?>
+                                    </div>
+                                    <div class="car-meta-item">
+                                        <i class="fas fa-gas-pump"></i> <?php echo htmlspecialchars($car['fuel_type'] ?? 'Petrol'); ?>
+                                    </div>
+                                </div>
+                                <div class="car-price">
+                                    <div>
+                                        <span class="price-value">$<?php echo htmlspecialchars($car['price_per_day']); ?></span>
+                                        <span class="price-period">/ day</span>
+                                    </div>
+                                    <a href="listing-details.php?id=<?php echo $car['id']; ?>" class="btn-book">Book Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
+                        }
+                    } else {
+                        // Fallback if no cars in database
+                    ?>
+                    <!-- Fallback Car 1 -->
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="car-card">
+                            <div class="car-image">
                                 <img src="assets/img/cars/car-01.jpg" alt="Mercedes-Benz E-Class">
                             </div>
-                            <div class="car-content">
+                            <div class="car-details">
                                 <h3 class="car-title">Mercedes-Benz E-Class</h3>
-                                <div class="car-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                    <span>(4.8)</span>
-                                </div>
-                                <div class="car-features">
-                                    <div class="car-feature">
+                                <div class="car-meta">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-car"></i> Sedan
                                     </div>
-                                    <div class="car-feature">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-cog"></i> Automatic
                                     </div>
-                                    <div class="car-feature">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-gas-pump"></i> Hybrid
                                     </div>
                                 </div>
                                 <div class="car-price">
-                                    <div class="price">$89 <span>/ day</span></div>
+                                    <div>
+                                        <span class="price-value">$89</span>
+                                        <span class="price-period">/ day</span>
+                                    </div>
                                     <a href="listing-details.php?id=1" class="btn-book">Book Now</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Featured Car 2 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="featured-car-card">
-                            <div class="car-img">
+                    <!-- Fallback Car 2 -->
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="car-card">
+                            <div class="car-image">
                                 <img src="assets/img/cars/car-02.jpg" alt="BMW 5 Series">
                             </div>
-                            <div class="car-content">
+                            <div class="car-details">
                                 <h3 class="car-title">BMW 5 Series</h3>
-                                <div class="car-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <span>(5.0)</span>
-                                </div>
-                                <div class="car-features">
-                                    <div class="car-feature">
+                                <div class="car-meta">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-car"></i> Sedan
                                     </div>
-                                    <div class="car-feature">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-cog"></i> Automatic
                                     </div>
-                                    <div class="car-feature">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-gas-pump"></i> Petrol
                                     </div>
                                 </div>
                                 <div class="car-price">
-                                    <div class="price">$95 <span>/ day</span></div>
+                                    <div>
+                                        <span class="price-value">$95</span>
+                                        <span class="price-period">/ day</span>
+                                    </div>
                                     <a href="listing-details.php?id=2" class="btn-book">Book Now</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Featured Car 3 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="featured-car-card">
-                            <div class="car-img">
+                    <!-- Fallback Car 3 -->
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="car-card">
+                            <div class="car-image">
                                 <img src="assets/img/cars/car-03.jpg" alt="Audi Q7">
                             </div>
-                            <div class="car-content">
+                            <div class="car-details">
                                 <h3 class="car-title">Audi Q7</h3>
-                                <div class="car-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="far fa-star"></i>
-                                    <span>(4.0)</span>
-                                </div>
-                                <div class="car-features">
-                                    <div class="car-feature">
+                                <div class="car-meta">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-car"></i> SUV
                                     </div>
-                                    <div class="car-feature">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-cog"></i> Automatic
                                     </div>
-                                    <div class="car-feature">
+                                    <div class="car-meta-item">
                                         <i class="fas fa-gas-pump"></i> Diesel
                                     </div>
                                 </div>
                                 <div class="car-price">
-                                    <div class="price">$120 <span>/ day</span></div>
+                                    <div>
+                                        <span class="price-value">$120</span>
+                                        <span class="price-period">/ day</span>
+                                    </div>
                                     <a href="listing-details.php?id=3" class="btn-book">Book Now</a>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <?php } ?>
                 </div>
                 
                 <div class="text-center mt-4">
-                    <a href="booking_list.php" class="btn btn-cta">View All Cars <i class="fas fa-arrow-right"></i></a>
+                    <a href="booking_list.php" class="btn-primary">View All Cars</a>
                 </div>
             </div>
         </section>
         <!-- /Featured Cars Section -->
         
         <!-- How It Works Section -->
-        <section class="how-it-works">
+        <section class="section process-section">
             <div class="container">
                 <div class="section-title">
                     <h2>How It Works</h2>
-                    <p>Renting a car with us is quick and easy - just follow these simple steps</p>
+                    <p>Renting a car with us is quick and easy</p>
                 </div>
                 
                 <div class="row">
-                    <!-- Step 1 -->
                     <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                        <div class="step-card">
-                            <div class="step-number">1</div>
-                            <div class="step-icon">
-                                <i class="fas fa-search"></i>
-                            </div>
-                            <h3>Choose Your Car</h3>
-                            <p>Browse our extensive fleet and select the perfect vehicle for your needs.</p>
+                        <div class="process-card">
+                            <div class="process-number">1</div>
+                            <h3 class="process-title">Choose Your Car</h3>
+                            <p class="process-description">Browse our selection and find the perfect vehicle for your needs.</p>
                         </div>
                     </div>
                     
-                    <!-- Step 2 -->
                     <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                        <div class="step-card">
-                            <div class="step-number">2</div>
-                            <div class="step-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <h3>Book & Pay</h3>
-                            <p>Select your dates and complete the booking with our secure payment system.</p>
+                        <div class="process-card">
+                            <div class="process-number">2</div>
+                            <h3 class="process-title">Book & Pay</h3>
+                            <p class="process-description">Secure your reservation with our easy payment system.</p>
                         </div>
                     </div>
                     
-                    <!-- Step 3 -->
                     <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                        <div class="step-card">
-                            <div class="step-number">3</div>
-                            <div class="step-icon">
-                                <i class="fas fa-car"></i>
-                            </div>
-                            <h3>Pick Up Car</h3>
-                            <p>Collect your vehicle from our convenient location with minimal paperwork.</p>
+                        <div class="process-card">
+                            <div class="process-number">3</div>
+                            <h3 class="process-title">Pick Up Car</h3>
+                            <p class="process-description">Collect your vehicle with minimal paperwork and no waiting.</p>
                         </div>
                     </div>
                     
-                    <!-- Step 4 -->
                     <div class="col-lg-3 col-md-6">
-                        <div class="step-card">
-                            <div class="step-number">4</div>
-                            <div class="step-icon">
-                                <i class="fas fa-road"></i>
-                            </div>
-                            <h3>Enjoy Your Trip</h3>
-                            <p>Hit the road with confidence, knowing we provide 24/7 roadside assistance.</p>
+                        <div class="process-card">
+                            <div class="process-number">4</div>
+                            <h3 class="process-title">Enjoy Your Trip</h3>
+                            <p class="process-description">Hit the road with confidence and 24/7 support if needed.</p>
                         </div>
                     </div>
                 </div>
@@ -860,213 +971,12 @@
         </section>
         <!-- /How It Works Section -->
         
-        <!-- Testimonials Section -->
-        <section class="testimonial-section">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Customer Reviews</h2>
-                    <p>See what our satisfied customers have to say about their experience with us</p>
-                </div>
-                
-                <div class="row">
-                    <!-- Testimonial 1 -->
-                    <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                        <div class="testimonial-card">
-                            <div class="testimonial-content">
-                                "The service was exceptional from start to finish. The car was in perfect condition, and the staff was incredibly helpful. Will definitely use Dreams Rent again for my next trip!"
-                            </div>
-                            <div class="testimonial-user">
-                                <div class="user-img">
-                                    <img src="assets/img/testimonials/user-1.jpg" alt="John Smith">
-                                </div>
-                                <div class="user-info">
-                                    <h5>John Smith</h5>
-                                    <p>Business Traveler</p>
-                                    <div class="rating">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Testimonial 2 -->
-                    <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                        <div class="testimonial-card">
-                            <div class="testimonial-content">
-                                "I rented a luxury car for my anniversary, and it made our special day even more memorable. The booking process was smooth, and the car was delivered right on time."
-                            </div>
-                            <div class="testimonial-user">
-                                <div class="user-img">
-                                    <img src="assets/img/testimonials/user-2.jpg" alt="Sarah Johnson">
-                                </div>
-                                <div class="user-info">
-                                    <h5>Sarah Johnson</h5>
-                                    <p>Vacation Traveler</p>
-                                    <div class="rating">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star-half-alt"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Testimonial 3 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="testimonial-card">
-                            <div class="testimonial-content">
-                                "As a frequent traveler, I've used many car rental services, but Dreams Rent stands out for their exceptional fleet and customer service. Their prices are competitive too!"
-                            </div>
-                            <div class="testimonial-user">
-                                <div class="user-img">
-                                    <img src="assets/img/testimonials/user-3.jpg" alt="Michael Brown">
-                                </div>
-                                <div class="user-info">
-                                    <h5>Michael Brown</h5>
-                                    <p>Frequent Traveler</p>
-                                    <div class="rating">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- /Testimonials Section -->
-        
-        <!-- Benefits Section -->
-        <section class="benefits-section">
-            <div class="container">
-                <div class="section-title text-center mb-5">
-                    <h2 class="text-white">Why Choose Us</h2>
-                    <p class="text-white opacity-75">We offer the best car rental experience with premium services</p>
-                </div>
-                
-                <div class="row">
-                    <div class="col-lg-6">
-                        <!-- Benefit 1 -->
-                        <div class="benefit-card">
-                            <div class="benefit-icon">
-                                <i class="fas fa-car"></i>
-                            </div>
-                            <div class="benefit-content">
-                                <h3>Premium Fleet</h3>
-                                <p>Our fleet includes the latest models from top manufacturers, all meticulously maintained for your safety and comfort.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-6">
-                        <!-- Benefit 2 -->
-                        <div class="benefit-card">
-                            <div class="benefit-icon">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                            <div class="benefit-content">
-                                <h3>Best Price Guarantee</h3>
-                                <p>We offer competitive pricing with no hidden fees. If you find a better price elsewhere, we'll match it.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-6">
-                        <!-- Benefit 3 -->
-                        <div class="benefit-card">
-                            <div class="benefit-icon">
-                                <i class="fas fa-headset"></i>
-                            </div>
-                            <div class="benefit-content">
-                                <h3>24/7 Customer Support</h3>
-                                <p>Our dedicated support team is available around the clock to assist you with any questions or concerns.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-6">
-                        <!-- Benefit 4 -->
-                        <div class="benefit-card">
-                            <div class="benefit-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <div class="benefit-content">
-                                <h3>Comprehensive Insurance</h3>
-                                <p>All our rentals come with comprehensive insurance coverage for your peace of mind.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- /Benefits Section -->
-        
-        <!-- Car Categories Section -->
-        <section class="car-categories">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Browse By Category</h2>
-                    <p>Find the perfect vehicle for your specific needs</p>
-                </div>
-                
-                <div class="row">
-                    <!-- Category 1 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="category-card">
-                            <img src="assets/img/categories/luxury.jpg" alt="Luxury Cars">
-                            <div class="category-content">
-                                <h3>Luxury Cars</h3>
-                                <p>Experience ultimate comfort and style</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Category 2 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="category-card">
-                            <img src="assets/img/categories/suv.jpg" alt="SUVs">
-                            <div class="category-content">
-                                <h3>SUVs</h3>
-                                <p>Perfect for family trips and adventures</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Category 3 -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="category-card">
-                            <img src="assets/img/categories/sports.jpg" alt="Sports Cars">
-                            <div class="category-content">
-                                <h3>Sports Cars</h3>
-                                <p>Feel the thrill of high performance</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- /Car Categories Section -->
-        
         <!-- CTA Section -->
         <section class="cta-section">
             <div class="container">
-                <div class="cta-content">
-                    <h2>Ready to Hit the Road?</h2>
-                    <p>Book your dream car today and enjoy the freedom of the open road. Our premium fleet and exceptional service are waiting for you.</p>
-                    <a href="booking_list.php" class="btn-cta">Book Now <i class="fas fa-arrow-right"></i></a>
-                </div>
+                <h2 class="cta-title">Ready to hit the road?</h2>
+                <p class="cta-description">Book your dream car today and enjoy the freedom of the open road.</p>
+                <a href="booking_list.php" class="btn-cta">Book Now <i class="fas fa-arrow-right"></i></a>
             </div>
         </section>
         <!-- /CTA Section -->
@@ -1079,30 +989,110 @@
     <?php include('assets/includes/footer_link.php') ?>
     
     <script>
-        // Initialize date pickers
         $(document).ready(function() {
-            $('.datetimepicker').datetimepicker({
-                format: 'MM/DD/YYYY',
-                minDate: new Date(),
-                icons: {
-                    up: "fas fa-chevron-up",
-                    down: "fas fa-chevron-down",
-                    next: 'fas fa-chevron-right',
-                    previous: 'fas fa-chevron-left'
+            // Initialize datepickers with proper formatting and constraints
+            $('.datepicker').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                startDate: new Date(),
+                todayHighlight: true
+            });
+            
+            // Set minimum return date based on pickup date
+            $('#pickup_date').on('changeDate', function() {
+                var pickupDate = new Date($('#pickup_date').val());
+                var nextDay = new Date(pickupDate);
+                nextDay.setDate(pickupDate.getDate() + 1);
+                
+                $('#return_date').datepicker('setStartDate', nextDay);
+                
+                // If return date is before pickup date, update it
+                var returnDate = new Date($('#return_date').val());
+                if (returnDate <= pickupDate) {
+                    $('#return_date').datepicker('update', nextDay);
                 }
             });
             
-            // Add animation on scroll
-            $(window).scroll(function() {
-                var windowTop = $(window).scrollTop();
+            // Toggle advanced filters
+            $('#toggleFilters').on('click', function(e) {
+                e.preventDefault();
+                $('#advancedFilters').slideToggle(300);
+                $('#showFiltersText, #hideFiltersText').toggle();
+                $('#filterIcon').toggleClass('fa-chevron-down fa-chevron-up');
+            });
+            
+            // Reset filters
+            $('#resetFilters').on('click', function() {
+                $('#searchForm')[0].reset();
                 
-                $('.featured-car-card, .step-card, .testimonial-card, .benefit-card, .category-card').each(function() {
-                    var elementTop = $(this).offset().top;
+                // Reset range sliders
+                $('.range-min').val(50);
+                $('.range-max').val(500);
+                $('.input-min').val(50);
+                $('.input-max').val(500);
+                updateRangeSlider();
+            });
+            
+            // Range slider functionality
+            const rangeInput = document.querySelectorAll(".range-input input");
+            const priceInput = document.querySelectorAll(".price-input input");
+            const range = document.querySelector(".range-selected");
+            let priceGap = 10;
+            
+            function updateRangeSlider() {
+                let minVal = parseInt(rangeInput[0].value);
+                let maxVal = parseInt(rangeInput[1].value);
+                
+                if ((maxVal - minVal) < priceGap) {
+                    if ($(this).hasClass("range-min")) {
+                        rangeInput[0].value = maxVal - priceGap;
+                    } else {
+                        rangeInput[1].value = minVal + priceGap;
+                    }
+                } else {
+                    priceInput[0].value = minVal;
+                    priceInput[1].value = maxVal;
+                    range.style.left = (minVal / rangeInput[0].max) * 100 + "%";
+                    range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
+                }
+            }
+            
+            rangeInput.forEach(input => {
+                input.addEventListener("input", updateRangeSlider);
+            });
+            
+            priceInput.forEach(input => {
+                input.addEventListener("input", e => {
+                    let minPrice = parseInt(priceInput[0].value);
+                    let maxPrice = parseInt(priceInput[1].value);
                     
-                    if (windowTop > elementTop - $(window).height() + 100) {
-                        $(this).addClass('animated fadeInUp');
+                    if ((maxPrice - minPrice >= priceGap) && maxPrice <= rangeInput[1].max) {
+                        if (e.target.className === "input-min") {
+                            rangeInput[0].value = minPrice;
+                            range.style.left = (minPrice / rangeInput[0].max) * 100 + "%";
+                        } else {
+                            rangeInput[1].value = maxPrice;
+                            range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
+                        }
                     }
                 });
+            });
+            
+            // Initialize range slider on page load
+            updateRangeSlider();
+            
+            // Form validation before submission
+            $('#searchForm').on('submit', function(e) {
+                var pickupDate = $('#pickup_date').val();
+                var returnDate = $('#return_date').val();
+                
+                if (!pickupDate || !returnDate) {
+                    e.preventDefault();
+                    alert('Please select both pickup and return dates.');
+                    return false;
+                }
+                
+                return true;
             });
         });
     </script>
