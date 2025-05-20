@@ -13,9 +13,9 @@ require_once __DIR__ . '/db_connect.php';
 $uploadDir = __DIR__ . '/../assets/img/cars/';
 if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-// Logging helper
+// Logging helper - modified to use error_log instead of file_put_contents
 function log_debug($msg) {
-    file_put_contents(__DIR__ . '/debug.log', $msg . "\n", FILE_APPEND);
+    error_log($msg);
 }
 
 // Image crop & resize
@@ -116,30 +116,30 @@ if ($action === 'add') {
         brand_id, model_id, category_id,
         fuel_type_id, gear_type_id
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-");
+    ");
 
-if (!$stmt) {
-    die('❌ Prepare failed: ' . $conn->error);
-}
+    if (!$stmt) {
+        die('❌ Prepare failed: ' . $conn->error);
+    }
 
-$stmt->bind_param(
-    'sdsisiiiii',
-    $type,
-    $price,
-    $primaryImage,
-    $year,
-    $location_id,
-    $car_class,
-    $brand_id,
-    $model_id,
-    $category_id,
-    $fuel_type_id,
-    $gear_type_id
-);
+    $stmt->bind_param(
+        'sdsissiiiii',
+        $type,
+        $price,
+        $primaryImage,
+        $year,
+        $location_id,
+        $car_class,
+        $brand_id,
+        $model_id,
+        $category_id,
+        $fuel_type_id,
+        $gear_type_id
+    );
 
     if (!$stmt->execute()) {
         log_debug("Insert error: " . $stmt->error);
-        die('Database insert failed.');
+        die('Database insert failed: ' . $stmt->error);
     }
 
     $car_id = $stmt->insert_id;
@@ -159,8 +159,6 @@ $stmt->bind_param(
             $imgStmt->execute();
         }
     }
-    
-    
 }
 
 // === EDIT EXISTING CAR ===
@@ -176,7 +174,7 @@ elseif ($action === 'edit') {
             WHERE car_id=?
         ");
         $stmt->bind_param(
-            'sdsissiiiii',
+            'sdsissiiiiii',
             $type,
             $price,
             $year,
@@ -198,7 +196,7 @@ elseif ($action === 'edit') {
             WHERE car_id=?
         ");
         $stmt->bind_param(
-            'sdssiisiiii',
+            'sdsiiiiiiii',
             $type,
             $price,
             $year,
@@ -215,7 +213,7 @@ elseif ($action === 'edit') {
 
     if (!$stmt->execute()) {
         log_debug("Update error: " . $stmt->error);
-        die('Update failed.');
+        die('Update failed: ' . $stmt->error);
     }
 
     // Optional: new gallery images
@@ -246,14 +244,13 @@ elseif ($action === 'delete') {
         if (file_exists($file)) unlink($file);
     }
     $stmt = $conn->prepare("DELETE FROM cars WHERE car_id = ?");
-if (!$stmt) {
-    die("❌ Prepare failed: " . $conn->error);
-}
-$stmt->bind_param('i', $id);
-if (!$stmt->execute()) {
-    die("❌ Execute failed: " . $stmt->error);
-}
-
+    if (!$stmt) {
+        die("❌ Prepare failed: " . $conn->error);
+    }
+    $stmt->bind_param('i', $id);
+    if (!$stmt->execute()) {
+        die("❌ Execute failed: " . $stmt->error);
+    }
 }
 
 header('Location: ../admin_cars.php');
