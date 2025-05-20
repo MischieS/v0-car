@@ -397,6 +397,26 @@
             width: 16px;
             text-align: center;
         }
+        
+        /* No cars message */
+        .no-cars-message {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: var(--light);
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+        }
+        
+        .no-cars-message h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .no-cars-message p {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -491,10 +511,10 @@
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="car-card">
                             <div class="car-image">
-                                <img src="<?php echo htmlspecialchars($car['image'] ?? 'assets/img/cars/default-car.jpg'); ?>" alt="<?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?>">
+                                <img src="<?php echo htmlspecialchars($car['image'] ?? $car['car_image'] ?? 'assets/img/cars/default-car.jpg'); ?>" alt="<?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?>">
                             </div>
                             <div class="car-details">
-                                <h3 class="car-title"><?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?></h3>
+                                <h3 class="car-title"><?php echo htmlspecialchars($car['car_type'] ?? $car['brand'] . ' ' . $car['model']); ?></h3>
                                 <div class="car-meta">
                                     <div class="car-meta-item">
                                         <i class="fas fa-car"></i> <?php echo htmlspecialchars($car['type'] ?? 'Sedan'); ?>
@@ -508,10 +528,10 @@
                                 </div>
                                 <div class="car-price">
                                     <div>
-                                        <span class="price-value">$<?php echo htmlspecialchars($car['price_per_day']); ?></span>
+                                        <span class="price-value">$<?php echo htmlspecialchars($car['price_per_day'] ?? $car['car_price_perday']); ?></span>
                                         <span class="price-period">/ day</span>
                                     </div>
-                                    <a href="listing-details.php?id=<?php echo $car['id']; ?>" class="btn-book">Book Now</a>
+                                    <a href="listing-details.php?id=<?php echo $car['car_id']; ?>" class="btn-book">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -519,95 +539,13 @@
                     <?php
                         }
                     } else {
-                        // Fallback if no cars in database
+                        // No cars found message
                     ?>
-                    <!-- Fallback Car 1 -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="car-card">
-                            <div class="car-image">
-                                <img src="assets/img/cars/car-01.jpg" alt="Mercedes-Benz E-Class">
-                            </div>
-                            <div class="car-details">
-                                <h3 class="car-title">Mercedes-Benz E-Class</h3>
-                                <div class="car-meta">
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-car"></i> Sedan
-                                    </div>
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-cog"></i> Automatic
-                                    </div>
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-gas-pump"></i> Hybrid
-                                    </div>
-                                </div>
-                                <div class="car-price">
-                                    <div>
-                                        <span class="price-value">$89</span>
-                                        <span class="price-period">/ day</span>
-                                    </div>
-                                    <a href="listing-details.php?id=1" class="btn-book">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Fallback Car 2 -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="car-card">
-                            <div class="car-image">
-                                <img src="assets/img/cars/car-02.jpg" alt="BMW 5 Series">
-                            </div>
-                            <div class="car-details">
-                                <h3 class="car-title">BMW 5 Series</h3>
-                                <div class="car-meta">
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-car"></i> Sedan
-                                    </div>
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-cog"></i> Automatic
-                                    </div>
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-gas-pump"></i> Petrol
-                                    </div>
-                                </div>
-                                <div class="car-price">
-                                    <div>
-                                        <span class="price-value">$95</span>
-                                        <span class="price-period">/ day</span>
-                                    </div>
-                                    <a href="listing-details.php?id=2" class="btn-book">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Fallback Car 3 -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="car-card">
-                            <div class="car-image">
-                                <img src="assets/img/cars/car-03.jpg" alt="Audi Q7">
-                            </div>
-                            <div class="car-details">
-                                <h3 class="car-title">Audi Q7</h3>
-                                <div class="car-meta">
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-car"></i> SUV
-                                    </div>
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-cog"></i> Automatic
-                                    </div>
-                                    <div class="car-meta-item">
-                                        <i class="fas fa-gas-pump"></i> Diesel
-                                    </div>
-                                </div>
-                                <div class="car-price">
-                                    <div>
-                                        <span class="price-value">$120</span>
-                                        <span class="price-period">/ day</span>
-                                    </div>
-                                    <a href="listing-details.php?id=3" class="btn-book">Book Now</a>
-                                </div>
-                            </div>
+                    <div class="col-12">
+                        <div class="no-cars-message">
+                            <h3>No Featured Cars Available</h3>
+                            <p>We're currently updating our inventory. Please check back soon or browse all available cars.</p>
+                            <a href="booking_list.php" class="btn-primary">View All Cars</a>
                         </div>
                     </div>
                     <?php } ?>

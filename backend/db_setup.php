@@ -58,7 +58,7 @@ $setup->query("CREATE TABLE IF NOT EXISTS locations (
 ) ENGINE=InnoDB");
 
 $setup->query("INSERT IGNORE INTO locations (location_name) VALUES
-    ('Istanbul Office')");
+    ('Istanbul Office'), ('Ankara Office'), ('Izmir Office')");
 
 // BRANDS TABLE
 $setup->query("CREATE TABLE IF NOT EXISTS car_brands (
@@ -125,6 +125,15 @@ $setup->query("CREATE TABLE IF NOT EXISTS cars (
     category_id INT,
     fuel_type_id INT,
     gear_type_id INT,
+    featured TINYINT(1) DEFAULT 0,
+    transmission VARCHAR(20) DEFAULT 'Automatic',
+    fuel_type VARCHAR(20) DEFAULT 'Petrol',
+    passengers INT DEFAULT 5,
+    brand VARCHAR(50),
+    model VARCHAR(50),
+    type VARCHAR(50) DEFAULT 'Sedan',
+    image VARCHAR(255),
+    price_per_day DECIMAL(10,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
     FOREIGN KEY (brand_id) REFERENCES car_brands(id) ON DELETE SET NULL,
@@ -200,30 +209,231 @@ if ($res->num_rows === 0) {
     ");
 }
 
-// ADD SAMPLE CAR
-$res = $setup->query("SELECT * FROM cars WHERE car_type = 'Sample Car'");
-if ($res->num_rows === 0) {
+// ADD EXAMPLE USERS
+$exampleUsers = [
+    [
+        'first_name' => 'John',
+        'last_name' => 'Doe',
+        'user_email' => 'john@example.com',
+        'phone_number' => '+1234567890',
+        'address' => '123 Main St',
+        'country' => 'United States',
+        'city' => 'New York',
+        'state' => 'NY',
+        'pincode' => '10001',
+        'driving_licence_no' => 'DL12345678',
+        'password' => 'password123'
+    ],
+    [
+        'first_name' => 'Jane',
+        'last_name' => 'Smith',
+        'user_email' => 'jane@example.com',
+        'phone_number' => '+1987654321',
+        'address' => '456 Oak Ave',
+        'country' => 'United States',
+        'city' => 'Los Angeles',
+        'state' => 'CA',
+        'pincode' => '90001',
+        'driving_licence_no' => 'DL87654321',
+        'password' => 'password123'
+    ]
+];
+
+foreach ($exampleUsers as $user) {
+    $email = $user['user_email'];
+    $res = $setup->query("SELECT * FROM users WHERE user_email = '$email'");
+    if ($res->num_rows === 0) {
+        $pass = password_hash($user['password'], PASSWORD_DEFAULT);
+        $setup->query("
+            INSERT INTO users (
+                first_name, last_name, user_email, phone_number, 
+                address, country, city, state, pincode, 
+                driving_licence_no, password_hash, user_role
+            ) VALUES (
+                '{$user['first_name']}', '{$user['last_name']}', '{$user['user_email']}', '{$user['phone_number']}',
+                '{$user['address']}', '{$user['country']}', '{$user['city']}', '{$user['state']}', '{$user['pincode']}',
+                '{$user['driving_licence_no']}', '$pass', 'user'
+            )
+        ");
+    }
+}
+
+// ADD EXAMPLE CARS
+$exampleCars = [
+    [
+        'car_type' => 'Mercedes-Benz E-Class',
+        'car_price_perday' => 89.99,
+        'year' => 2023,
+        'location_id' => 1,
+        'car_class' => 'Luxury',
+        'car_image' => 'assets/img/cars/mercedes-e-class.jpg',
+        'brand_id' => 3,
+        'model_id' => 6,
+        'category_id' => 1,
+        'fuel_type_id' => 1,
+        'gear_type_id' => 2,
+        'featured' => 1,
+        'transmission' => 'Automatic',
+        'fuel_type' => 'Petrol',
+        'passengers' => 5,
+        'brand' => 'Mercedes',
+        'model' => 'E-Class',
+        'type' => 'Sedan',
+        'image' => 'assets/img/cars/mercedes-e-class.jpg',
+        'price_per_day' => 89.99
+    ],
+    [
+        'car_type' => 'BMW 5 Series',
+        'car_price_perday' => 95.99,
+        'year' => 2022,
+        'location_id' => 2,
+        'car_class' => 'Luxury',
+        'car_image' => 'assets/img/cars/bmw-5-series.jpg',
+        'brand_id' => 2,
+        'model_id' => 4,
+        'category_id' => 1,
+        'fuel_type_id' => 1,
+        'gear_type_id' => 2,
+        'featured' => 1,
+        'transmission' => 'Automatic',
+        'fuel_type' => 'Petrol',
+        'passengers' => 5,
+        'brand' => 'BMW',
+        'model' => '5 Series',
+        'type' => 'Sedan',
+        'image' => 'assets/img/cars/bmw-5-series.jpg',
+        'price_per_day' => 95.99
+    ],
+    [
+        'car_type' => 'Audi Q7',
+        'car_price_perday' => 120.00,
+        'year' => 2023,
+        'location_id' => 3,
+        'car_class' => 'SUV',
+        'car_image' => 'assets/img/cars/audi-q7.jpg',
+        'brand_id' => 5,
+        'model_id' => 10,
+        'category_id' => 2,
+        'fuel_type_id' => 2,
+        'gear_type_id' => 2,
+        'featured' => 1,
+        'transmission' => 'Automatic',
+        'fuel_type' => 'Diesel',
+        'passengers' => 7,
+        'brand' => 'Audi',
+        'model' => 'Q7',
+        'type' => 'SUV',
+        'image' => 'assets/img/cars/audi-q7.jpg',
+        'price_per_day' => 120.00
+    ]
+];
+
+// Clear existing cars first to avoid duplicates
+$setup->query("DELETE FROM car_images WHERE car_id IN (SELECT car_id FROM cars WHERE car_type IN ('Mercedes-Benz E-Class', 'BMW 5 Series', 'Audi Q7'))");
+$setup->query("DELETE FROM cars WHERE car_type IN ('Mercedes-Benz E-Class', 'BMW 5 Series', 'Audi Q7')");
+
+foreach ($exampleCars as $car) {
     $setup->query("
         INSERT INTO cars (
-            car_type, car_price_perday, year,
-            location_id, car_class, car_image,
-            brand_id, model_id, category_id,
-            fuel_type_id, gear_type_id
+            car_type, car_price_perday, year, location_id, car_class, car_image,
+            brand_id, model_id, category_id, fuel_type_id, gear_type_id, featured,
+            transmission, fuel_type, passengers, brand, model, type, image, price_per_day
         ) VALUES (
-            'Sample Car', 89.99, 2023,
-            1, 'Standard', 'sample.jpg',
-            1, 1, 1,
-            1, 2
+            '{$car['car_type']}', {$car['car_price_perday']}, {$car['year']}, {$car['location_id']},
+            '{$car['car_class']}', '{$car['car_image']}', {$car['brand_id']}, {$car['model_id']},
+            {$car['category_id']}, {$car['fuel_type_id']}, {$car['gear_type_id']}, {$car['featured']},
+            '{$car['transmission']}', '{$car['fuel_type']}', {$car['passengers']}, '{$car['brand']}',
+            '{$car['model']}', '{$car['type']}', '{$car['image']}', {$car['price_per_day']}
         )
     ");
-    $sampleCarId = $setup->insert_id;
-
+    
+    $carId = $setup->insert_id;
+    
     // Add gallery images
     $setup->query("INSERT INTO car_images (car_id, image_path) VALUES
-        ($sampleCarId, 'sample_gallery1.jpg'),
-        ($sampleCarId, 'sample_gallery2.jpg')
+        ($carId, '{$car['image']}'),
+        ($carId, 'assets/img/cars/gallery-1.jpg'),
+        ($carId, 'assets/img/cars/gallery-2.jpg')
     ");
 }
 
-echo "✅ Database setup complete. Admin: admin@gmail.com / Pass: admin123";
+// ADD EXAMPLE RESERVATIONS
+// First, get user IDs
+$userQuery = $setup->query("SELECT user_id FROM users WHERE user_email IN ('john@example.com', 'jane@example.com')");
+$userIds = [];
+while ($row = $userQuery->fetch_assoc()) {
+    $userIds[] = $row['user_id'];
+}
+
+// Get car IDs
+$carQuery = $setup->query("SELECT car_id FROM cars WHERE car_type IN ('Mercedes-Benz E-Class', 'BMW 5 Series', 'Audi Q7')");
+$carIds = [];
+while ($row = $carQuery->fetch_assoc()) {
+    $carIds[] = $row['car_id'];
+}
+
+// Clear existing reservations for these users and cars
+if (!empty($userIds) && !empty($carIds)) {
+    $userIdsStr = implode(',', $userIds);
+    $carIdsStr = implode(',', $carIds);
+    $setup->query("DELETE FROM reservations WHERE user_id IN ($userIdsStr) AND car_id IN ($carIdsStr)");
+    
+    // Create example reservations
+    $exampleReservations = [
+        [
+            'user_id' => $userIds[0],
+            'car_id' => $carIds[0],
+            'start_date' => date('Y-m-d', strtotime('+2 days')),
+            'end_date' => date('Y-m-d', strtotime('+5 days')),
+            'pickup_location' => 'Istanbul Office',
+            'return_location' => 'Istanbul Office',
+            'total_price' => 269.97, // 3 days * 89.99
+            'status' => 'active'
+        ],
+        [
+            'user_id' => $userIds[1],
+            'car_id' => $carIds[1],
+            'start_date' => date('Y-m-d', strtotime('+1 week')),
+            'end_date' => date('Y-m-d', strtotime('+10 days')),
+            'pickup_location' => 'Ankara Office',
+            'return_location' => 'Ankara Office',
+            'total_price' => 287.97, // 3 days * 95.99
+            'status' => 'active'
+        ],
+        [
+            'user_id' => $userIds[0],
+            'car_id' => $carIds[2],
+            'start_date' => date('Y-m-d', strtotime('+2 weeks')),
+            'end_date' => date('Y-m-d', strtotime('+17 days')),
+            'pickup_location' => 'Izmir Office',
+            'return_location' => 'Istanbul Office',
+            'total_price' => 360.00, // 3 days * 120.00
+            'status' => 'active'
+        ]
+    ];
+    
+    foreach ($exampleReservations as $reservation) {
+        $setup->query("
+            INSERT INTO reservations (
+                user_id, car_id, start_date, end_date,
+                pickup_location, return_location, total_price, status
+            ) VALUES (
+                {$reservation['user_id']}, {$reservation['car_id']}, '{$reservation['start_date']}', '{$reservation['end_date']}',
+                '{$reservation['pickup_location']}', '{$reservation['return_location']}', {$reservation['total_price']}, '{$reservation['status']}'
+            )
+        ");
+    }
+}
+
+// Create directories for car images if they don't exist
+$directories = ['assets/img/cars', 'assets/img/users', 'assets/img/cars/gallery'];
+foreach ($directories as $dir) {
+    if (!file_exists($dir)) {
+        mkdir($dir, 0755, true);
+    }
+}
+
+echo "✅ Database setup complete. Admin: admin@gmail.com / Pass: admin123<br>";
+echo "✅ Example users created: john@example.com and jane@example.com (password: password123)<br>";
+echo "✅ Example cars and reservations added.";
 ?>
