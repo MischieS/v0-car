@@ -27,6 +27,30 @@ $setup->query("CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB");
 
+// USER ACTIVITY LOG TABLE
+$setup->query("CREATE TABLE IF NOT EXISTS user_activity (
+    activity_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    activity_type VARCHAR(50) NOT NULL,
+    activity_description TEXT,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB");
+
+// USER SESSIONS TABLE
+$setup->query("CREATE TABLE IF NOT EXISTS user_sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    user_id INT NOT NULL,
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB");
+
 // LOCATIONS TABLE
 $setup->query("CREATE TABLE IF NOT EXISTS locations (
     location_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -134,6 +158,37 @@ $setup->query("CREATE TABLE IF NOT EXISTS reservations (
     FOREIGN KEY (car_id) REFERENCES cars(car_id) ON DELETE CASCADE
 ) ENGINE=InnoDB");
 
+// SITE SETTINGS TABLE
+$setup->query("CREATE TABLE IF NOT EXISTS site_settings (
+    setting_id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_name VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT,
+    setting_group VARCHAR(50) NOT NULL,
+    is_public BOOLEAN DEFAULT FALSE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by INT,
+    FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB");
+
+// Insert default site settings
+$setup->query("INSERT IGNORE INTO site_settings (setting_name, setting_value, setting_group, is_public) VALUES
+    ('site_name', 'Car Rental System', 'general', TRUE),
+    ('site_description', 'Rent your dream car today', 'general', TRUE),
+    ('contact_email', 'contact@example.com', 'contact', TRUE),
+    ('contact_phone', '+1234567890', 'contact', TRUE),
+    ('address', '123 Main Street, City, Country', 'contact', TRUE),
+    ('facebook_url', 'https://facebook.com/', 'social', TRUE),
+    ('twitter_url', 'https://twitter.com/', 'social', TRUE),
+    ('instagram_url', 'https://instagram.com/', 'social', TRUE),
+    ('enable_bookings', '1', 'features', FALSE),
+    ('maintenance_mode', '0', 'system', FALSE),
+    ('currency_symbol', '$', 'payment', TRUE),
+    ('tax_rate', '10', 'payment', FALSE),
+    ('booking_fee', '5', 'payment', FALSE),
+    ('min_rental_days', '1', 'booking', TRUE),
+    ('max_rental_days', '30', 'booking', TRUE)
+");
+
 // ADD DEFAULT ADMIN
 $adminEmail = 'admin@gmail.com';
 $res = $setup->query("SELECT * FROM users WHERE user_email = '$adminEmail'");
@@ -155,7 +210,7 @@ if ($res->num_rows === 0) {
             brand_id, model_id, category_id,
             fuel_type_id, gear_type_id
         ) VALUES (
-            'Sample Car', 89.99, 'automatic', 2023,
+            'Sample Car', 89.99, 2023,
             1, 'Standard', 'sample.jpg',
             1, 1, 1,
             1, 2
