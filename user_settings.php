@@ -18,16 +18,23 @@ $profileImg = $user['user_profile_image']
     ? 'assets/img/profiles/' . htmlspecialchars($user['user_profile_image']) 
     : 'assets/img/profiles/default.png';
 
-// Get user activity
-$activityStmt = $conn->prepare("
-    SELECT * FROM user_activity 
-    WHERE user_id = ? 
-    ORDER BY activity_date DESC 
-    LIMIT 5
-");
-$activityStmt->bind_param('i', $user_id);
-$activityStmt->execute();
-$activityResult = $activityStmt->get_result();
+// Check if user_activity table exists
+$activityTableExists = false;
+$result = $conn->query("SHOW TABLES LIKE 'user_activity'");
+if ($result->num_rows > 0) {
+    $activityTableExists = true;
+    
+    // Get user activity
+    $activityStmt = $conn->prepare("
+        SELECT * FROM user_activity 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT 5
+    ");
+    $activityStmt->bind_param('i', $user_id);
+    $activityStmt->execute();
+    $activityResult = $activityStmt->get_result();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -174,21 +181,21 @@ $activityResult = $activityStmt->get_result();
     <div class="container">
       <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-          <i class="feather-check-circle me-2"></i> Profile updated successfully!
+          <i class="fas fa-check-circle me-2"></i> Profile updated successfully!
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       <?php endif; ?>
       
       <?php if (isset($_GET['password_success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-          <i class="feather-check-circle me-2"></i> Password changed successfully!
+          <i class="fas fa-check-circle me-2"></i> Password changed successfully!
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       <?php endif; ?>
       
       <?php if (isset($_GET['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          <i class="feather-alert-circle me-2"></i> <?= htmlspecialchars($_GET['error']) ?>
+          <i class="fas fa-exclamation-circle me-2"></i> <?= htmlspecialchars($_GET['error']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       <?php endif; ?>
@@ -201,7 +208,7 @@ $activityResult = $activityStmt->get_result();
               <div class="profile-upload mb-3">
                 <img src="<?= $profileImg ?>" alt="Profile" class="profile-img" id="preview-image">
                 <label for="upload" class="upload-btn">
-                  <i class="feather-camera"></i>
+                  <i class="fas fa-camera"></i>
                 </label>
                 <input type="file" id="upload" accept="image/*" class="d-none">
               </div>
@@ -210,17 +217,19 @@ $activityResult = $activityStmt->get_result();
             </div>
             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
               <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
-                <i class="feather-user"></i> Profile Information
+                <i class="fas fa-user"></i> Profile Information
               </button>
               <button class="nav-link" id="address-tab" data-bs-toggle="pill" data-bs-target="#address" type="button" role="tab">
-                <i class="feather-map-pin"></i> Address Information
+                <i class="fas fa-map-pin"></i> Address Information
               </button>
               <button class="nav-link" id="password-tab" data-bs-toggle="pill" data-bs-target="#password" type="button" role="tab">
-                <i class="feather-lock"></i> Change Password
+                <i class="fas fa-lock"></i> Change Password
               </button>
+              <?php if ($activityTableExists): ?>
               <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity" type="button" role="tab">
-                <i class="feather-activity"></i> Account Activity
+                <i class="fas fa-history"></i> Account Activity
               </button>
+              <?php endif; ?>
             </div>
           </div>
           
@@ -231,7 +240,7 @@ $activityResult = $activityStmt->get_result();
             <div class="card-body">
               <div class="d-flex align-items-center mb-3">
                 <div class="flex-shrink-0">
-                  <i class="feather-shield text-success fs-4"></i>
+                  <i class="fas fa-shield-alt text-success fs-4"></i>
                 </div>
                 <div class="flex-grow-1 ms-3">
                   <h6 class="mb-0">Account Verified</h6>
@@ -240,11 +249,11 @@ $activityResult = $activityStmt->get_result();
               </div>
               <div class="d-flex align-items-center">
                 <div class="flex-shrink-0">
-                  <i class="feather-clock text-primary fs-4"></i>
+                  <i class="fas fa-clock text-primary fs-4"></i>
                 </div>
                 <div class="flex-grow-1 ms-3">
                   <h6 class="mb-0">Member Since</h6>
-                  <small class="text-muted"><?= date('F d, Y', strtotime($user['created_at'])) ?></small>
+                  <small class="text-muted"><?= isset($user['created_at']) ? date('F d, Y', strtotime($user['created_at'])) : 'N/A' ?></small>
                 </div>
               </div>
             </div>
@@ -258,6 +267,7 @@ $activityResult = $activityStmt->get_result();
             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
               <form method="post" action="backend/update_user_profile.php" enctype="multipart/form-data">
                 <input type="hidden" name="cropped_profile" id="cropped_profile">
+                <input type="hidden" name="update_profile" value="1">
                 <div class="settings-card">
                   <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Profile Information</h5>
@@ -294,8 +304,8 @@ $activityResult = $activityStmt->get_result();
                 </div>
                 
                 <div class="text-end mt-3">
-                  <button type="submit" name="update_profile" class="btn btn-primary">
-                    <i class="feather-save me-1"></i> Save Changes
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save Changes
                   </button>
                 </div>
               </form>
@@ -304,6 +314,7 @@ $activityResult = $activityStmt->get_result();
             <!-- Address Information -->
             <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
               <form method="post" action="backend/update_user_profile.php">
+                <input type="hidden" name="update_address" value="1">
                 <div class="settings-card">
                   <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Address Information</h5>
@@ -346,8 +357,8 @@ $activityResult = $activityStmt->get_result();
                 </div>
                 
                 <div class="text-end mt-3">
-                  <button type="submit" name="update_address" class="btn btn-primary">
-                    <i class="feather-save me-1"></i> Save Address
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save Address
                   </button>
                 </div>
               </form>
@@ -368,7 +379,7 @@ $activityResult = $activityStmt->get_result();
                         <div class="input-group">
                           <input type="password" name="current_password" id="current_password" class="form-control" required>
                           <button class="btn btn-outline-secondary toggle-password" type="button" data-target="current_password">
-                            <i class="feather-eye"></i>
+                            <i class="fas fa-eye"></i>
                           </button>
                         </div>
                       </div>
@@ -377,7 +388,7 @@ $activityResult = $activityStmt->get_result();
                         <div class="input-group">
                           <input type="password" name="new_password" id="new_password" class="form-control" required>
                           <button class="btn btn-outline-secondary toggle-password" type="button" data-target="new_password">
-                            <i class="feather-eye"></i>
+                            <i class="fas fa-eye"></i>
                           </button>
                         </div>
                         <div class="password-strength mt-2">
@@ -390,14 +401,14 @@ $activityResult = $activityStmt->get_result();
                         <div class="input-group">
                           <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
                           <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirm_password">
-                            <i class="feather-eye"></i>
+                            <i class="fas fa-eye"></i>
                           </button>
                         </div>
                         <div id="password-match" class="form-text"></div>
                       </div>
                       <div class="col-12">
                         <div class="alert alert-info">
-                          <h6 class="mb-1"><i class="feather-info me-1"></i> Password Requirements:</h6>
+                          <h6 class="mb-1"><i class="fas fa-info-circle me-1"></i> Password Requirements:</h6>
                           <ul class="mb-0 ps-3">
                             <li>At least 8 characters long</li>
                             <li>Include at least one uppercase letter</li>
@@ -412,13 +423,14 @@ $activityResult = $activityStmt->get_result();
                 
                 <div class="text-end mt-3">
                   <button type="submit" class="btn btn-primary" id="change-password-btn">
-                    <i class="feather-lock me-1"></i> Change Password
+                    <i class="fas fa-lock me-1"></i> Change Password
                   </button>
                 </div>
               </form>
             </div>
             
             <!-- Account Activity -->
+            <?php if ($activityTableExists): ?>
             <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
               <div class="settings-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -431,29 +443,29 @@ $activityResult = $activityStmt->get_result();
                       <div class="activity-item d-flex align-items-center">
                         <div class="activity-icon">
                           <?php
-                          $icon = 'activity';
+                          $icon = 'history';
                           switch ($activity['activity_type']) {
-                              case 'login': $icon = 'log-in'; break;
-                              case 'profile_update': $icon = 'user'; break;
-                              case 'password_change': $icon = 'lock'; break;
-                              case 'booking': $icon = 'calendar'; break;
+                              case 'login': $icon = 'sign-in-alt'; break;
+                              case 'profile_update': $icon = 'user-edit'; break;
+                              case 'password_change': $icon = 'key'; break;
+                              case 'booking': $icon = 'calendar-alt'; break;
                               case 'payment': $icon = 'credit-card'; break;
                           }
                           ?>
-                          <i class="feather-<?= $icon ?>"></i>
+                          <i class="fas fa-<?= $icon ?>"></i>
                         </div>
                         <div class="activity-content">
                           <p class="mb-0"><?= htmlspecialchars($activity['activity_description']) ?></p>
                           <span class="activity-date">
-                            <i class="feather-clock me-1"></i>
-                            <?= date('M d, Y h:i A', strtotime($activity['activity_date'])) ?>
+                            <i class="fas fa-clock me-1"></i>
+                            <?= date('M d, Y h:i A', strtotime($activity['created_at'])) ?>
                           </span>
                         </div>
                       </div>
                     <?php endwhile; ?>
                   <?php else: ?>
                     <div class="text-center py-4">
-                      <i class="feather-calendar fs-1 text-muted"></i>
+                      <i class="fas fa-calendar-alt fs-1 text-muted"></i>
                       <p class="mt-2">No recent activity found</p>
                     </div>
                   <?php endif; ?>
@@ -467,7 +479,7 @@ $activityResult = $activityStmt->get_result();
                 <div class="card-body">
                   <div class="d-flex align-items-center mb-3">
                     <div class="flex-shrink-0">
-                      <i class="feather-monitor text-success fs-4"></i>
+                      <i class="fas fa-desktop text-success fs-4"></i>
                     </div>
                     <div class="flex-grow-1 ms-3">
                       <div class="d-flex justify-content-between align-items-center">
@@ -483,13 +495,14 @@ $activityResult = $activityStmt->get_result();
                   </div>
                   
                   <div class="text-center mt-3">
-                    <a href="backend/logout_all.php" class="btn btn-outline-danger btn-sm">
-                      <i class="feather-log-out me-1"></i> Logout from all devices
+                    <a href="backend/logout.php?all=1" class="btn btn-outline-danger btn-sm">
+                      <i class="fas fa-sign-out-alt me-1"></i> Logout from all devices
                     </a>
                   </div>
                 </div>
               </div>
             </div>
+            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -509,7 +522,7 @@ $activityResult = $activityStmt->get_result();
       </div>
       <div class="modal-body">
         <div class="img-container">
-          <img id="crop-image" src="/placeholder.svg" class="img-fluid">
+          <img id="crop-image" src="#" class="img-fluid">
         </div>
       </div>
       <div class="modal-footer">
@@ -625,12 +638,12 @@ document.querySelectorAll('.toggle-password').forEach(button => {
     
     if (input.type === 'password') {
       input.type = 'text';
-      icon.classList.remove('feather-eye');
-      icon.classList.add('feather-eye-off');
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
     } else {
       input.type = 'password';
-      icon.classList.remove('feather-eye-off');
-      icon.classList.add('feather-eye');
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
     }
   });
 });

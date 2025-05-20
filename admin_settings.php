@@ -15,11 +15,60 @@ $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
-// Get site settings
-$settings_query = $conn->query("SELECT * FROM site_settings ORDER BY setting_group, setting_name");
-$site_settings = [];
-while ($setting = $settings_query->fetch_assoc()) {
-    $site_settings[$setting['setting_group']][$setting['setting_name']] = $setting;
+// Check if site_settings table exists
+$settingsTableExists = false;
+$result = $conn->query("SHOW TABLES LIKE 'site_settings'");
+if ($result->num_rows > 0) {
+    $settingsTableExists = true;
+    
+    // Get site settings
+    $settings_query = $conn->query("SELECT * FROM site_settings ORDER BY setting_group, setting_name");
+    $site_settings = [];
+    while ($setting = $settings_query->fetch_assoc()) {
+        $site_settings[$setting['setting_group']][$setting['setting_name']] = $setting;
+    }
+}
+
+// Check if user_activity table exists
+$activityTableExists = false;
+$result = $conn->query("SHOW TABLES LIKE 'user_activity'");
+if ($result->num_rows > 0) {
+    $activityTableExists = true;
+    
+    // Get recent activity
+    $activity_query = $conn->query("
+        SELECT a.*, u.user_name, u.user_email 
+        FROM user_activity a 
+        JOIN users u ON a.user_id = u.user_id 
+        ORDER BY a.created_at DESC 
+        LIMIT 50
+    ");
+    
+    $activities = [];
+    while ($activity = $activity_query->fetch_assoc()) {
+        $activities[] = $activity;
+    }
+}
+
+// Check if user_sessions table exists
+$sessionsTableExists = false;
+$result = $conn->query("SHOW TABLES LIKE 'user_sessions'");
+if ($result->num_rows > 0) {
+    $sessionsTableExists = true;
+    
+    // Get active sessions
+    $sessions_query = $conn->query("
+        SELECT s.*, u.user_name, u.user_email 
+        FROM user_sessions s 
+        JOIN users u ON s.user_id = u.user_id 
+        WHERE s.is_active = 1
+        ORDER BY s.last_activity DESC
+    ");
+    
+    $sessions = [];
+    while ($session = $sessions_query->fetch_assoc()) {
+        $sessions[] = $session;
+    }
 }
 
 // Handle form submissions
@@ -52,10 +101,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update->bind_param('sssssi', $first_name, $last_name, $user_name, $user_email, $phone_number, $user_id);
         
         if ($update->execute()) {
-            // Log activity
-            $activity_desc = "Updated admin profile information";
-            $conn->query("INSERT INTO user_activity (user_id, activity_type, activity_description, ip_address) 
-                         VALUES ($user_id, 'profile_update', '$activity_desc', '{$_SERVER['REMOTE_ADDR']}')");
+            // Log activity if table exists
+            if ($activityTableExists) {
+                $activity_desc = "Updated admin profile information";
+                $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+                $conn->query("INSERT INTO user_activity (user_id, activity_type, activity_description, ip_address) 
+                             VALUES ($user_id, 'profile_update', '$activity_desc', '$ip_address')");
+            }
             
             $success_message = "Profile updated successfully!";
             
@@ -87,10 +139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update->bind_param('si', $password_hash, $user_id);
             
             if ($update->execute()) {
-                // Log activity
-                $activity_desc = "Changed account password";
-                $conn->query("INSERT INTO user_activity (user_id, activity_type, activity_description, ip_address) 
-                             VALUES ($user_id, 'password_change', '$activity_desc', '{$_SERVER['REMOTE_ADDR']}')");
+                // Log activity if table exists
+                if ($activityTableExists) {
+                    $activity_desc = "Changed account password";
+                    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+                    $conn->query("INSERT INTO user_activity (user_id, activity_type, activity_description, ip_address) 
+                                 VALUES ($user_id, 'password_change', '$activity_desc', '$ip_address')");
+                }
                 
                 $success_message = "Password updated successfully!";
             } else {
@@ -100,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Site Settings Update
-    else if ($form_type === 'site_settings') {
+    else if ($form_type === 'site_settings' && $settingsTableExists) {
         $setting_group = $_POST['setting_group'] ?? '';
         
         if (!empty($setting_group)) {
@@ -132,52 +187,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if ($updated) {
-                // Log activity
-                $activity_desc = "Updated site settings: $setting_group";
-                $conn->query("INSERT INTO user_activity (user_id, activity_type, activity_description, ip_address) 
-                             VALUES ($user_id, 'settings_update', '$activity_desc', '{$_SERVER['REMOTE_ADDR']}')");
+                // Log activity if table exists
+                if ($activityTableExists) {
+                    $activity_desc = "Updated site settings: $setting_group";
+                    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+                    $conn->query("INSERT INTO user_activity (user_id, activity_type, activity_description, ip_address) 
+                                 VALUES ($user_id, 'settings_update', '$activity_desc', '$ip_address')");
+                }
                 
                 $success_message = ucfirst($setting_group) . " settings updated successfully!";
                 
                 // Refresh settings
-                $settings_query = $conn->query("SELECT * FROM site_settings ORDER BY setting_group, setting_name");
-                $site_settings = [];
-                while ($setting = $settings_query->fetch_assoc()) {
-                    $site_settings[$setting['setting_group']][$setting['setting_name']] = $setting;
+                if ($settingsTableExists) {
+                    $settings_query = $conn->query("SELECT * FROM site_settings ORDER BY setting_group, setting_name");
+                    $site_settings = [];
+                    while ($setting = $settings_query->fetch_assoc()) {
+                        $site_settings[$setting['setting_group']][$setting['setting_name']] = $setting;
+                    }
                 }
             } else {
                 $error_message = "Failed to update settings: " . $conn->error;
             }
         }
     }
-}
-
-// Get recent activity
-$activity_query = $conn->query("
-    SELECT a.*, u.user_name, u.user_email 
-    FROM user_activity a 
-    JOIN users u ON a.user_id = u.user_id 
-    ORDER BY a.created_at DESC 
-    LIMIT 50
-");
-
-$activities = [];
-while ($activity = $activity_query->fetch_assoc()) {
-    $activities[] = $activity;
-}
-
-// Get active sessions
-$sessions_query = $conn->query("
-    SELECT s.*, u.user_name, u.user_email 
-    FROM user_sessions s 
-    JOIN users u ON s.user_id = u.user_id 
-    WHERE s.is_active = 1
-    ORDER BY s.last_activity DESC
-");
-
-$sessions = [];
-while ($session = $sessions_query->fetch_assoc()) {
-    $sessions[] = $session;
 }
 
 // Helper function to format dates
@@ -187,7 +219,7 @@ function formatDate($date) {
 
 // Helper function to get setting value
 function getSetting($settings, $group, $name, $default = '') {
-    return $settings[$group][$name]['setting_value'] ?? $default;
+    return isset($settings[$group][$name]['setting_value']) ? $settings[$group][$name]['setting_value'] : $default;
 }
 ?>
 
@@ -359,6 +391,13 @@ function getSetting($settings, $group, $name, $default = '') {
                 </div>
                 <?php endif; ?>
 
+                <?php if (!$settingsTableExists || !$activityTableExists || !$sessionsTableExists): ?>
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Some required database tables are missing. Please run the <a href="backend/db_setup_additional.php" class="alert-link">database setup script</a> to create them.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php endif; ?>
+
                 <div class="row">
                     <div class="col-md-12">
                         <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
@@ -367,6 +406,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                     <i class="fas fa-user me-2"></i>Profile
                                 </button>
                             </li>
+                            <?php if ($settingsTableExists): ?>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">
                                     <i class="fas fa-cog me-2"></i>General
@@ -392,16 +432,21 @@ function getSetting($settings, $group, $name, $default = '') {
                                     <i class="fas fa-share-alt me-2"></i>Social
                                 </button>
                             </li>
+                            <?php endif; ?>
+                            <?php if ($sessionsTableExists): ?>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
                                     <i class="fas fa-shield-alt me-2"></i>Security
                                 </button>
                             </li>
+                            <?php endif; ?>
+                            <?php if ($activityTableExists): ?>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">
                                     <i class="fas fa-history me-2"></i>Activity
                                 </button>
                             </li>
+                            <?php endif; ?>
                         </ul>
 
                         <div class="tab-content" id="settingsTabsContent">
@@ -521,6 +566,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             </div>
                             
                             <!-- General Settings Tab -->
+                            <?php if ($settingsTableExists): ?>
                             <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                                 <div class="card settings-card mb-4">
                                     <div class="card-header bg-light">
@@ -717,8 +763,10 @@ function getSetting($settings, $group, $name, $default = '') {
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
                             
                             <!-- Security Tab -->
+                            <?php if ($sessionsTableExists): ?>
                             <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
                                 <div class="card settings-card mb-4">
                                     <div class="card-header bg-light">
@@ -782,8 +830,10 @@ function getSetting($settings, $group, $name, $default = '') {
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
                             
                             <!-- Activity Tab -->
+                            <?php if ($activityTableExists): ?>
                             <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
                                 <div class="card settings-card mb-4">
                                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
@@ -815,18 +865,19 @@ function getSetting($settings, $group, $name, $default = '') {
                                                         </div>
                                                         <div>
                                                             <?php
-                                                            $icon = match($activity['activity_type']) {
-                                                                'login' => '<i class="fas fa-sign-in-alt text-success me-1"></i>',
-                                                                'logout' => '<i class="fas fa-sign-out-alt text-warning me-1"></i>',
-                                                                'profile_update' => '<i class="fas fa-user-edit text-primary me-1"></i>',
-                                                                'password_change' => '<i class="fas fa-key text-danger me-1"></i>',
-                                                                'settings_update' => '<i class="fas fa-cog text-info me-1"></i>',
-                                                                default => '<i class="fas fa-info-circle text-secondary me-1"></i>'
-                                                            };
+                                                            $icon = '';
+                                                            switch($activity['activity_type']) {
+                                                                case 'login': $icon = '<i class="fas fa-sign-in-alt text-success me-1"></i>'; break;
+                                                                case 'logout': $icon = '<i class="fas fa-sign-out-alt text-warning me-1"></i>'; break;
+                                                                case 'profile_update': $icon = '<i class="fas fa-user-edit text-primary me-1"></i>'; break;
+                                                                case 'password_change': $icon = '<i class="fas fa-key text-danger me-1"></i>'; break;
+                                                                case 'settings_update': $icon = '<i class="fas fa-cog text-info me-1"></i>'; break;
+                                                                default: $icon = '<i class="fas fa-info-circle text-secondary me-1"></i>'; break;
+                                                            }
                                                             echo $icon . htmlspecialchars($activity['activity_description']);
                                                             ?>
                                                         </div>
-                                                        <small class="text-muted">IP: <?= htmlspecialchars($activity['ip_address']) ?></small>
+                                                        <small class="text-muted">IP: <?= htmlspecialchars($activity['ip_address'] ?? 'Unknown') ?></small>
                                                     </div>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
@@ -834,6 +885,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
