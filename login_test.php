@@ -5,172 +5,263 @@ session_start();
 // Include database connection
 require_once 'backend/db_connect.php';
 
-// Function to check if a user exists
-function userExists($email) {
-    global $conn;
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
+// Function to create a test user
+function createTestUser($conn) {
+    // Check if test user already exists
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $testEmail = 'test@example.com';
+    $stmt->bind_param("s", $testEmail);
     $stmt->execute();
     $result = $stmt->get_result();
-    return $result->num_rows > 0;
-}
-
-// Function to create a test user
-function createTestUser() {
-    global $conn;
     
-    $name = 'Test User';
-    $email = 'test@example.com';
-    $password = password_hash('password123', PASSWORD_DEFAULT);
-    $role = 'user';
-    
-    // Check if user already exists
-    if (userExists($email)) {
-        // Update existing user
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-        $stmt->bind_param("ss", $password, $email);
-        return $stmt->execute();
-    } else {
-        // Create new user
+    if ($result->num_rows === 0) {
+        // Create test user
+        $name = 'Test User';
+        $email = 'test@example.com';
+        $password = password_hash('password123', PASSWORD_DEFAULT);
+        $role = 'user';
+        
         $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $name, $email, $password, $role);
-        return $stmt->execute();
+        $stmt->execute();
+        
+        return "Test user created: test@example.com / password123";
+    } else {
+        return "Test user already exists: test@example.com / password123";
     }
 }
 
-// Function to create an admin user
-function createAdminUser() {
-    global $conn;
+// Create admin user if it doesn't exist
+function createAdminUser($conn) {
+    // Check if admin user already exists
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $adminEmail = 'admin@example.com';
+    $stmt->bind_param("s", $adminEmail);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    $name = 'Admin User';
-    $email = 'admin@example.com';
-    $password = password_hash('admin123', PASSWORD_DEFAULT);
-    $role = 'admin';
-    
-    // Check if user already exists
-    if (userExists($email)) {
-        // Update existing user
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-        $stmt->bind_param("ss", $password, $email);
-        return $stmt->execute();
-    } else {
-        // Create new user
+    if ($result->num_rows === 0) {
+        // Create admin user
+        $name = 'Admin User';
+        $email = 'admin@example.com';
+        $password = password_hash('admin123', PASSWORD_DEFAULT);
+        $role = 'admin';
+        
         $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $name, $email, $password, $role);
-        return $stmt->execute();
+        $stmt->execute();
+        
+        return "Admin user created: admin@example.com / admin123";
+    } else {
+        return "Admin user already exists: admin@example.com / admin123";
     }
 }
 
-// Output header
-echo "<!DOCTYPE html>
-<html>
+// Handle form submission
+$message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['create_test_user'])) {
+        $message = createTestUser($conn);
+    } elseif (isset($_POST['create_admin_user'])) {
+        $message = createAdminUser($conn);
+    } elseif (isset($_POST['test_login'])) {
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+        
+        // Check if email exists in database
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+            
+            // Verify password
+            if (password_verify($password, $user["password"])) {
+                $message = "Login successful! User: " . $user['name'] . " (Role: " . $user['role'] . ")";
+            } else {
+                $message = "Login failed: Invalid password";
+            }
+        } else {
+            $message = "Login failed: User not found";
+        }
+    }
+}
+
+// Get all users
+$users = [];
+$result = $conn->query("SELECT id, name, email, role FROM users");
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $users[] = $row;
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Test</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1, h2 { color: #2563eb; }
-        .message { padding: 10px; margin: 5px 0; border-radius: 5px; }
-        .info { background-color: #dbeafe; color: #1e40af; }
-        .success { background-color: #dcfce7; color: #166534; }
-        .error { background-color: #fee2e2; color: #991b1b; }
-        .warning { background-color: #fef3c7; color: #92400e; }
-        .action-btn { display: inline-block; margin: 10px 0; padding: 8px 16px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; }
-        .action-btn:hover { background: #1d4ed8; }
-        pre { background: #f1f5f9; padding: 10px; border-radius: 5px; overflow: auto; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        table, th, td { border: 1px solid #e2e8f0; }
-        th, td { padding: 10px; text-align: left; }
-        th { background-color: #f8fafc; }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #2563eb;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background: #e0f2fe;
+            border-left: 4px solid #2563eb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8fafc;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        button, input[type="submit"] {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover, input[type="submit"]:hover {
+            background: #1d4ed8;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
-    <div class='container'>
-        <h1>Login Test</h1>";
-
-// Check database connection
-echo "<h2>Database Connection</h2>";
-if ($conn) {
-    echo "<div class='message success'>Database connection successful</div>";
-} else {
-    echo "<div class='message error'>Database connection failed</div>";
-    exit;
-}
-
-// Check users table
-echo "<h2>Users Table</h2>";
-$result = $conn->query("SHOW TABLES LIKE 'users'");
-if ($result->num_rows > 0) {
-    echo "<div class='message success'>Users table exists</div>";
-    
-    // Check users count
-    $result = $conn->query("SELECT COUNT(*) as count FROM users");
-    $row = $result->fetch_assoc();
-    echo "<div class='message info'>Users in database: " . $row['count'] . "</div>";
-    
-    // Show sample users
-    $result = $conn->query("SELECT id, name, email, role FROM users LIMIT 5");
-    if ($result->num_rows > 0) {
-        echo "<h3>Sample Users</h3>";
-        echo "<table>";
-        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th></tr>";
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>";
-            echo "<td>" . $row['id'] . "</td>";
-            echo "<td>" . $row['name'] . "</td>";
-            echo "<td>" . $row['email'] . "</td>";
-            echo "<td>" . $row['role'] . "</td>";
-            echo "</tr>";
-        }
-        echo "</table>";
-    }
-} else {
-    echo "<div class='message error'>Users table does not exist</div>";
-}
-
-// Create test users if requested
-if (isset($_GET['create_users'])) {
-    echo "<h2>Creating Test Users</h2>";
-    
-    if (createTestUser()) {
-        echo "<div class='message success'>Test user created/updated successfully</div>";
-        echo "<div class='message info'>Test user credentials: test@example.com / password123</div>";
-    } else {
-        echo "<div class='message error'>Failed to create test user</div>";
-    }
-    
-    if (createAdminUser()) {
-        echo "<div class='message success'>Admin user created/updated successfully</div>";
-        echo "<div class='message info'>Admin credentials: admin@example.com / admin123</div>";
-    } else {
-        echo "<div class='message error'>Failed to create admin user</div>";
-    }
-}
-
-// Test login form
-echo "<h2>Login Form Test</h2>";
-echo "<form action='backend/process_login.php' method='post' style='background: #f8fafc; padding: 20px; border-radius: 8px;'>
-        <div style='margin-bottom: 15px;'>
-            <label style='display: block; margin-bottom: 5px;'>Email:</label>
-            <input type='email' name='email' value='test@example.com' style='width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;'>
+    <div class="container">
+        <h1>Login Test Page</h1>
+        
+        <?php if (!empty($message)): ?>
+            <div class="message"><?php echo $message; ?></div>
+        <?php endif; ?>
+        
+        <div class="card">
+            <h2>Create Test Users</h2>
+            <form method="post">
+                <button type="submit" name="create_test_user">Create Test User</button>
+                <button type="submit" name="create_admin_user">Create Admin User</button>
+            </form>
         </div>
-        <div style='margin-bottom: 15px;'>
-            <label style='display: block; margin-bottom: 5px;'>Password:</label>
-            <input type='password' name='password' value='password123' style='width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;'>
+        
+        <div class="card">
+            <h2>Test Login</h2>
+            <form method="post">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="test@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" value="password123" required>
+                </div>
+                <input type="submit" name="test_login" value="Test Login">
+            </form>
+            
+            <p>Or use the regular login page: <a href="login.php">Go to Login Page</a></p>
         </div>
-        <div style='margin-bottom: 15px;'>
-            <label>
-                <input type='checkbox' name='remember'> Remember me
-            </label>
+        
+        <div class="card">
+            <h2>Existing Users</h2>
+            <?php if (count($users) > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($users as $user): ?>
+                            <tr>
+                                <td><?php echo $user['id']; ?></td>
+                                <td><?php echo htmlspecialchars($user['name']); ?></td>
+                                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                <td><?php echo htmlspecialchars($user['role']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>No users found in the database.</p>
+            <?php endif; ?>
         </div>
-        <button type='submit' style='padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer;'>Test Login</button>
-      </form>";
-
-echo "<div style='margin-top: 20px;'>
-        <a href='?create_users=1' class='action-btn'>Create/Reset Test Users</a>
-        <a href='login.php' class='action-btn'>Go to Login Page</a>
-        <a href='index.php' class='action-btn'>Go to Home Page</a>
-      </div>";
-
-echo "</div></body></html>";
-?>
+        
+        <div class="card">
+            <h2>Session Information</h2>
+            <?php if (count($_SESSION) > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($_SESSION as $key => $value): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($key); ?></td>
+                                <td><?php echo is_array($value) ? json_encode($value) : htmlspecialchars($value); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>No session variables set.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</body>
+</html>
