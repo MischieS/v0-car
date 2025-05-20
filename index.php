@@ -1,84 +1,107 @@
-<?php
-// Basic PHP script demonstrating core features
-
-// Variables and data types
-$name = "User";
-$age = 30;
-$isLoggedIn = true;
-$items = ["Item 1", "Item 2", "Item 3"];
-
-// Function definition
-function greet($name, $timeOfDay = "day") {
-    return "Good $timeOfDay, $name!";
-}
-
-// Conditional statements
-if ($isLoggedIn) {
-    $status = "logged in";
-} else {
-    $status = "logged out";
-}
-
-// Class definition
-class Person {
-    private $name;
-    private $age;
-    
-    public function __construct($name, $age) {
-        $this->name = $name;
-        $this->age = $age;
-    }
-    
-    public function getDetails() {
-        return "Name: {$this->name}, Age: {$this->age}";
-    }
-}
-
-// Create an object
-$person = new Person($name, $age);
-
-// Output with HTML
-?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>PHP Example</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .card { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
-        .items { list-style-type: none; padding: 0; }
-        .items li { padding: 8px; background-color: #f4f4f4; margin-bottom: 5px; border-radius: 3px; }
-    </style>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+	<title>Rent a Car</title>
+	<?php include('assets/includes/header_link.php') ?>
 </head>
 <body>
-    <div class="container">
-        <h1><?php echo greet($name, "morning"); ?></h1>
-        
-        <div class="card">
-            <h2>User Information</h2>
-            <p>Status: You are <?php echo $status; ?></p>
-            <p><?php echo $person->getDetails(); ?></p>
-        </div>
-        
-        <div class="card">
-            <h2>Items List</h2>
-            <ul class="items">
-                <?php foreach($items as $item): ?>
-                    <li><?php echo $item; ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-        
-        <?php
-        // Loop example
-        echo "<div class='card'>";
-        echo "<h2>Loop Example</h2>";
-        for ($i = 1; $i <= 5; $i++) {
-            echo "<p>This is iteration number $i</p>";
-        }
-        echo "</div>";
-        ?>
-    </div>
+	
+	<div class="main-wrapper">
+		
+		<!-- Header -->
+		<?php include('assets/includes/header.php') ?>
+		<!-- /Header -->
+
+		<!-- Banner -->
+		<section class="banner-section banner-slider">		
+			<div class="container">
+			   	<div class="home-banner">		
+				   <div class="row align-items-center">					    
+					   	<div class="col-lg-6" >
+							<p class="explore-text"> <span><i class="fa-solid fa-thumbs-up me-2"></i></span>Whenever, wherever you need</p>
+							<h1><span>Rent a Car</span> <br>									
+							in Seconds</h1>
+							<p>Experience the ultimate in comfort, performance, and sophistication with our car rentals. From sleek sedans and stylish coupes to spacious SUVs and elegant convertibles, we offer a range of premium vehicles to suit your preferences and lifestyle. </p>
+							<div class="view-all">
+								<a href="booking_list.php" class="btn btn-view d-inline-flex align-items-center">View all Cars <span><i class="feather-arrow-right ms-2"></i></span></a>
+							</div>
+					   	</div>
+				   	</div>
+			   	</div>	
+		   	</div>
+		</section>
+	   	<!-- /Banner -->
+		
+		<!-- Search -->	
+		<div class="section-search"> 
+			<div class="container">	  
+				<div class="search-box-banner">
+					<form action="booking_list.php">
+						<ul class="align-items-center">
+							<li class="column-group-main">
+								<div class="input-block">
+									<label>Pickup Location</label>												
+									<div class="group-img">
+										<input type="text" class="form-control" placeholder="Enter City, Airport, or Address">
+										<span><i class="feather-map-pin"></i></span>
+									</div>
+								</div>
+							</li>
+							<li class="column-group-main">						
+								<div class="input-block">																	
+									<label>Pickup Date</label>
+								</div>
+								<div class="input-block-wrapp">
+									<div class="input-block date-widget">												
+										<div class="group-img">
+										<input type="text" class="form-control datetimepicker" placeholder="04/11/2023">
+										<span><i class="feather-calendar"></i></span>
+										</div>
+									</div>
+									<div class="input-block time-widge">											
+										<div class="group-img">
+										<input type="text" class="form-control timepicker" placeholder="11:00 AM">
+										<span><i class="feather-clock"></i></span>
+										</div>
+									</div>
+								</div>	
+							</li>
+							<li class="column-group-main">						
+								<div class="input-block">																	
+									<label>Return Date</label>
+								</div>
+								<div class="input-block-wrapp">
+									<div class="input-block date-widge">												
+										<div class="group-img">
+										<input type="text" class="form-control datetimepicker" placeholder="04/11/2023">
+										<span><i class="feather-calendar"></i></span>
+										</div>
+									</div>
+									<div class="input-block time-widge">											
+										<div class="group-img">
+										<input type="text" class="form-control timepicker" placeholder="11:00 AM">
+										<span><i class="feather-clock"></i></span>
+										</div>
+									</div>
+								</div>	
+							</li>
+							<li class="column-group-last">
+								<div class="input-block">
+									<div class="search-btn">
+										<button class="btn search-button" type="submit"> <i class="fa fa-search" aria-hidden="true"></i>Search</button>
+									</div>
+								</div>
+							</li>
+						</ul>
+					</form>	
+				</div>
+			</div>	
+		</div>	
+		<!-- /Search -->
+
+	</div>
+	<?php include('assets/includes/footer_link.php') ?>
 </body>
 </html>
