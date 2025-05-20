@@ -1,21 +1,32 @@
 <?php
+// Start session
 session_start();
-require_once 'db_connect.php';
-require_once 'log_activity.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['user_email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $remember = isset($_POST['remember']) ? true : false;
+// Include database connection
+require_once 'db_connect.php';
+
+// Include activity logging function if available
+if (file_exists('log_activity.php')) {
+    require_once 'log_activity.php';
+}
+
+// Check if form was submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Get form data and sanitize
+    $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
+    $password = $_POST["password"];
+    $remember = isset($_POST["remember"]) ? true : false;
     
-    if (empty($email) || empty($password)) {
-        header('Location: ../login.php?error=Please fill in all fields');
-        exit;
+    // Validate email
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION["login_error"] = "Invalid email format";
+        header("Location: ../login.php");
+        exit();
     }
     
-    // Get user by email
-    $stmt = $conn->prepare("SELECT * FROM users WHERE user_email = ?");
-    $stmt->bind_param('s', $email);
+    // Check if email exists in database
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
     
@@ -23,57 +34,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $result->fetch_assoc();
         
         // Verify password
-        if (password_verify($password, $user['password_hash'])) {
+        if (password_verify($password, $user["password"])) {
             // Set session variables
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['user_name'] = $user['user_name'];
-            $_SESSION['user_email'] = $user['user_email'];
-            $_SESSION['user_role'] = $user['user_role'];
+            $_SESSION["user_id"] = $user["id"];
+            $_SESSION["user_name"] = $user["name"];
+            $_SESSION["user_email"] = $user["email"];
+            $_SESSION["user_role"] = $user["role"];
             
-            // Generate a unique session ID
-            $session_id = bin2hex(random_bytes(16));
-            $_SESSION['session_id'] = $session_id;
+            // Log the successful login activity if function exists
+            if (function_exists('logActivity')) {
+                logActivity($user["id"], 'login', 'User logged in successfully');
+            }
             
-            // Store session in database if remember me is checked
+            // Set remember me cookie if checked
             if ($remember) {
-                $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-                $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-                $expiry = date('Y-m-d H:i:s', strtotime('+30 days'));
+                // Generate a secure token
+                $token = bin2hex(random_bytes(32));
+                $expires = time() + (30 * 24 * 60 * 60); // 30 days
                 
-                $stmt = $conn->prepare("INSERT INTO user_sessions (user_id, session_id, ip_address, user_agent, expires_at) VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param('issss', $user['user_id'], $session_id, $ip_address, $user_agent, $expiry);
+                // Store token in database
+                $stmt = $conn->prepare("INSERT INTO user_tokens (user_id, token, expires) VALUES (?, ?, ?)");
+                $stmt->bind_param("iss", $user["id"], $token, date('Y-m-d H:i:s', $expires));
                 $stmt->execute();
                 
-                // Set cookie for 30 days
-                setcookie('remember_token', $session_id, time() + (86400 * 30), '/');
+                // Set cookie
+                setcookie("remember_token", $token, $expires, "/", "", false, true);
             }
             
-            // Log the login activity
-            logUserActivity($user['user_id'], 'login', 'User logged in successfully');
+            // Debug session
+            // echo "<!-- Session set: " . print_r($_SESSION, true) . " -->";
             
             // Redirect based on role
-            if ($user['user_role'] === 'admin') {
-                header('Location: ../admin_dashboard.php');
+            if ($user["role"] === "admin") {
+                header("Location: ../admin_dashboard.php");
             } else {
-                header('Location: ../user_dashboard.php');
+                header("Location: ../user_dashboard.php");
             }
-            exit;
+            exit();
         } else {
-            // Log failed login attempt
-            if (isset($user['user_id'])) {
-                logUserActivity($user['user_id'], 'login_failed', 'Failed login attempt - incorrect password');
-            }
-            header('Location: ../login.php?error=Invalid email or password');
-            exit;
+            $_SESSION["login_error"] = "Invalid password";
+            header("Location: ../login.php");
+            exit();
         }
     } else {
-        // Log failed login attempt for non-existent user
-        logUserActivity(0, 'login_failed', 'Failed login attempt - user not found: ' . $email);
-        header('Location: ../login.php?error=Invalid email or password');
-        exit;
+        $_SESSION["login_error"] = "Email not found";
+        header("Location: ../login.php");
+        exit();
     }
 } else {
-    header('Location: ../login.php');
-    exit;
+    // If not POST request, redirect to login page
+    header("Location: ../login.php");
+    exit();
 }
 ?>

@@ -1,3 +1,12 @@
+<?php
+// Start session at the very beginning of the file
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Debug session (can be removed in production)
+// echo "<!-- Session debug: " . (isset($_SESSION['user_id']) ? "User ID: " . $_SESSION['user_id'] : "No user logged in") . " -->";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -531,7 +540,7 @@
                                         <span class="price-value">$<?php echo htmlspecialchars($car['price_per_day'] ?? $car['car_price_perday']); ?></span>
                                         <span class="price-period">/ day</span>
                                     </div>
-                                    <a href="listing-details.php?id=<?php echo $car['car_id']; ?>" class="btn-book">Book Now</a>
+                                    <a href="listing-details.php?id=<?php echo $car['car_id'] ?? $car['id']; ?>" class="btn-book">Book Now</a>
                                 </div>
                             </div>
                         </div>
