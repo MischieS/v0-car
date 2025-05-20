@@ -1,8 +1,9 @@
 <?php
-// Start session at the very beginning of the file
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Start session
+session_start();
+
+// Include database connection
+require_once 'backend/db_connect.php';
 
 // Debug session (can be removed in production)
 // echo "<!-- Session debug: " . (isset($_SESSION['user_id']) ? "User ID: " . $_SESSION['user_id'] : "No user logged in") . " -->";
@@ -508,8 +509,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 
                 <div class="row">
                     <?php
-                    require_once 'backend/db_connect.php';
-                    
                     // Get featured cars from database
                     $sql = "SELECT * FROM cars WHERE featured = 1 LIMIT 6";
                     $result = $conn->query($sql);
