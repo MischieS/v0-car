@@ -123,7 +123,7 @@ if (!$stmt) {
 }
 
 $stmt->bind_param(
-    'sdsiisiiiii',
+    'sdsissiiiii',
     $type,
     $price,
     $primaryImage,
@@ -176,7 +176,7 @@ elseif ($action === 'edit') {
             WHERE car_id=?
         ");
         $stmt->bind_param(
-            'sdssiisiiiii',
+            'sdsissiiiiii',
             $type,
             $price,
             $year,
@@ -198,7 +198,7 @@ elseif ($action === 'edit') {
             WHERE car_id=?
         ");
         $stmt->bind_param(
-            'sdssiisiiii',
+            'sdsiiiiiiii',
             $type,
             $price,
             $year,

@@ -227,6 +227,15 @@ include 'assets/includes/header_link.php';
             </select>
           </div>
           <div class="col-md-4 mb-3"><label>Price/Day</label><input type="number" step="0.01" name="car_price_perday" id="carPrice" class="form-control" required></div>
+          <div class="col-md-4 mb-3">
+            <label>Car Class</label>
+            <select name="car_class" id="carClass" class="form-select" required>
+              <option value="">Select class</option>
+              <option value="Economy">Economy</option>
+              <option value="Standard">Standard</option>
+              <option value="Premium">Premium</option>
+            </select>
+          </div>
           <div class="col-md-4 mb-3"><label>Year</label><input type="number" name="year" id="carYear" class="form-control" min="1900" max="<?= date('Y') ?>" required></div>
           <div class="col-md-4 mb-3">
             <label>Location</label>
@@ -309,6 +318,7 @@ function openEditModal(car) {
   document.getElementById('carYear').value = car.year;
   document.getElementById('carLocation').value = car.location_id;
   document.getElementById('carType').value = car.car_type;
+  document.getElementById('carClass').value = car.car_class;
 
   fetch('backend/get_models.php?brand_id=' + car.brand_id)
     .then(res => res.json())
