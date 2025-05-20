@@ -68,6 +68,36 @@ $cars = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Car Listings - Rent a Car</title>
     <?php include 'assets/includes/header_link.php'; ?>
+    <style>
+    .carousel-item {
+        height: 200px;
+        overflow: hidden;
+    }
+    .carousel-item img {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+    }
+    .carousel-indicators {
+        margin-bottom: 0;
+    }
+    .carousel-indicators button {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: rgba(255,255,255,0.5);
+    }
+    .carousel-indicators button.active {
+        background-color: white;
+    }
+    .carousel-control-prev, .carousel-control-next {
+        width: 10%;
+        opacity: 0.7;
+    }
+    .carousel-control-prev:hover, .carousel-control-next:hover {
+        opacity: 1;
+    }
+</style>
 </head>
 
 <body>
@@ -152,79 +182,136 @@ $cars = $stmt->get_result();
                 <?php else: ?>
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <?php while ($car = $cars->fetch_assoc()): ?>
-                            <?php
-                            $img = $car['car_image']
-                                && file_exists(__DIR__ . '/assets/img/cars/' . $car['car_image'])
-                                ? 'assets/img/cars/' . $car['car_image']
-                                : 'assets/img/default-car.jpg';
-                            ?>
-                            <div class="col-xxl-4 col-lg-6 col-md-6 col-12">
-                                <div class="listing-item">
-                                    <div class="listing-img">
-                                        <img
-                                            src="<?= $img ?>"
-                                            class="card-img-top"
-                                            alt="<?= htmlspecialchars($car['car_type']) ?>">
-                                    </div>
-                                    <div class="listing-content">
-                                        <h5 class="listing-features d-flex align-items-end justify-content-between">
-                                            <?= htmlspecialchars($car['car_type']) ?>
-                                        </h5>
-                                        <ul class="listing-details-group">
-                                            <li>
-                                                <i class="fas fa-cogs me-1"></i>
-                                                <?= ucfirst($car['gear_name'] ?? 'N/A') ?>
-                                            </li>
-                                            <li>
-                                                <i class="fas fa-calendar-alt me-1"></i>
-                                                <?= htmlspecialchars($car['year']) ?>
-                                            </li>
-                                        </ul>
-                                        <div class="listing-location-details d-flex justify-content-between align-items-center">
-                                            <small class="listing-location">
-                                                <i class="fas fa-map-marker-alt me-1"></i>
-                                                <?= htmlspecialchars($car['location_name']) ?>
-                                            </small>
-                                            <div class="listing-price">
-                                                $<?= number_format($car['car_price_perday'], 2) ?>
-                                                <small>/day</small>
-                                            </div>
-                                        </div>
+                            
+<div class="col-xxl-4 col-lg-6 col-md-6 col-12">
+    <div class="listing-item">
+        <div class="listing-img">
+            <?php
+            // Fetch all images for this car
+            $imgStmt = $conn->prepare("
+                SELECT image_path FROM car_images 
+                WHERE car_id = ? 
+                ORDER BY image_id ASC
+            ");
+            $imgStmt->bind_param('i', $car['car_id']);
+            $imgStmt->execute();
+            $images = $imgStmt->get_result();
+            
+            // Create array of all images (main + gallery)
+            $allImages = [];
+            if ($car['car_image']) {
+                $allImages[] = $car['car_image'];
+            }
+            while ($img = $images->fetch_assoc()) {
+                if (!empty($img['image_path'])) {
+                    $allImages[] = $img['image_path'];
+                }
+            }
+            
+            // If no images, use default
+            if (empty($allImages)) {
+                $allImages[] = 'default-car.jpg';
+            }
+            ?>
+            
+            <!-- Image Carousel -->
+            <div id="carCarousel<?= $car['car_id'] ?>" class="carousel slide" data-bs-ride="carousel">
+                <!-- Indicators -->
+                <?php if (count($allImages) > 1): ?>
+                <div class="carousel-indicators">
+                    <?php foreach ($allImages as $index => $img): ?>
+                    <button type="button" data-bs-target="#carCarousel<?= $car['car_id'] ?>" 
+                            data-bs-slide-to="<?= $index ?>" 
+                            <?= $index === 0 ? 'class="active"' : '' ?>></button>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Slides -->
+                <div class="carousel-inner">
+                    <?php foreach ($allImages as $index => $img): ?>
+                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                        <img src="assets/img/cars/<?= htmlspecialchars($img) ?>" 
+                             class="d-block w-100" 
+                             alt="<?= htmlspecialchars($car['car_type']) ?>">
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                
+                <!-- Controls -->
+                <?php if (count($allImages) > 1): ?>
+                <button class="carousel-control-prev" type="button" 
+                        data-bs-target="#carCarousel<?= $car['car_id'] ?>" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" 
+                        data-bs-target="#carCarousel<?= $car['car_id'] ?>" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="listing-content">
+            <h5 class="listing-features d-flex align-items-end justify-content-between">
+                <?= htmlspecialchars($car['car_type']) ?>
+            </h5>
+            <ul class="listing-details-group">
+                <li>
+                    <i class="fas fa-cogs me-1"></i>
+                    <?= ucfirst($car['gear_name'] ?? 'N/A') ?>
+                </li>
+                <li>
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    <?= htmlspecialchars($car['year']) ?>
+                </li>
+            </ul>
+            <div class="listing-location-details d-flex justify-content-between align-items-center">
+                <small class="listing-location">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    <?= htmlspecialchars($car['location_name']) ?>
+                </small>
+                <div class="listing-price">
+                    $<?= number_format($car['car_price_perday'], 2) ?>
+                    <small>/day</small>
+                </div>
+            </div>
 
-                                        <?php
-                                        $dates = [];
-                                        $stmt2 = $conn->prepare("
-                        SELECT start_date,end_date 
-                          FROM reservations 
-                         WHERE car_id=? 
-                           AND status='active'
-                      ");
-                                        $stmt2->bind_param('i', $car['car_id']);
-                                        $stmt2->execute();
-                                        $res2 = $stmt2->get_result();
-                                        while ($r = $res2->fetch_assoc()) {
-                                            $sd = new DateTime($r['start_date']);
-                                            $ed = new DateTime($r['end_date']);
-                                            for ($d = clone $sd; $d <= $ed; $d->modify('+1 day')) {
-                                                $dates[] = $d->format('Y-m-d');
-                                            }
-                                        }
-                                        $datesJson = htmlspecialchars(json_encode(array_unique($dates)), ENT_QUOTES);
-                                        ?>
+            <?php
+            $dates = [];
+            $stmt2 = $conn->prepare("
+                SELECT start_date,end_date 
+                FROM reservations 
+                WHERE car_id=? 
+                AND status='active'
+            ");
+            $stmt2->bind_param('i', $car['car_id']);
+            $stmt2->execute();
+            $res2 = $stmt2->get_result();
+            while ($r = $res2->fetch_assoc()) {
+                $sd = new DateTime($r['start_date']);
+                $ed = new DateTime($r['end_date']);
+                for ($d = clone $sd; $d <= $ed; $d->modify('+1 day')) {
+                    $dates[] = $d->format('Y-m-d');
+                }
+            }
+            $datesJson = htmlspecialchars(json_encode(array_unique($dates)), ENT_QUOTES);
+            ?>
 
-<button 
-  class="btn btn-sm btn-primary w-100 book-now-btn"
-  data-bs-toggle="modal"
-  data-bs-target="#dateModal"
-  data-car-id="<?= $car['car_id'] ?>"
-  data-reserved='<?= json_encode(array_values(array_unique($dates))) ?>'
->
-  Book Now
-</button>
+            <button 
+                class="btn btn-sm btn-primary w-100 book-now-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#dateModal"
+                data-car-id="<?= $car['car_id'] ?>"
+                data-reserved='<?= json_encode(array_values(array_unique($dates))) ?>'
+            >
+                Book Now
+            </button>
+        </div>
+    </div>
+</div>
 
-                                    </div>
-                                </div>
-                            </div>
                         <?php endwhile; ?>
                     </div>
                 <?php endif; ?>
