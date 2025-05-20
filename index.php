@@ -6,15 +6,16 @@
     <title>Dreams Rent - Premium Car Rental Service</title>
     <?php include('assets/includes/header_link.php') ?>
     <style>
-        /* Minimal modern styles */
+        /* Minimal modern styles with improved colors */
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #93c5fd;
             --secondary: #f59e0b;
-            --light: #f9fafb;
-            --dark: #1f2937;
-            --gray: #6b7280;
-            --border: #e5e7eb;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --border: #e2e8f0;
             --success: #10b981;
             --radius: 8px;
         }
@@ -119,7 +120,7 @@
         
         .form-control:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             outline: none;
         }
         
@@ -149,6 +150,9 @@
             padding: 0 24px;
             transition: all 0.2s;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn-primary:hover {
@@ -224,6 +228,10 @@
             margin-right: 5px;
             color: var(--primary);
             font-size: 0.875rem;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            vertical-align: middle;
         }
         
         .car-price {
@@ -255,6 +263,9 @@
             font-weight: 500;
             font-size: 0.875rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn-book:hover {
@@ -303,173 +314,6 @@
             color: var(--gray);
         }
         
-        /* Filter section */
-        .filter-section {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: var(--radius);
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .filter-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--dark);
-        }
-        
-        .filter-group {
-            margin-bottom: 15px;
-        }
-        
-        .filter-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            color: var(--dark);
-        }
-        
-        .range-slider {
-            height: 5px;
-            position: relative;
-            background-color: #e1e1e1;
-            border-radius: 5px;
-        }
-        
-        .range-selected {
-            height: 100%;
-            left: 30%;
-            right: 30%;
-            position: absolute;
-            border-radius: 5px;
-            background-color: var(--primary);
-        }
-        
-        .range-input {
-            position: relative;
-            height: 5px;
-        }
-        
-        .range-input input {
-            position: absolute;
-            width: 100%;
-            height: 5px;
-            top: -5px;
-            background: none;
-            pointer-events: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-        }
-        
-        .range-input input::-webkit-slider-thumb {
-            height: 17px;
-            width: 17px;
-            border-radius: 50%;
-            border: 3px solid var(--primary);
-            background-color: #fff;
-            pointer-events: auto;
-            -webkit-appearance: none;
-            cursor: pointer;
-        }
-        
-        .range-input input::-moz-range-thumb {
-            height: 17px;
-            width: 17px;
-            border-radius: 50%;
-            border: 3px solid var(--primary);
-            background-color: #fff;
-            pointer-events: auto;
-            -moz-appearance: none;
-            cursor: pointer;
-        }
-        
-        .price-input {
-            display: flex;
-            align-items: center;
-            margin-top: 15px;
-        }
-        
-        .price-input .field {
-            display: flex;
-            width: 100%;
-            height: 36px;
-            align-items: center;
-        }
-        
-        .field input {
-            width: 100%;
-            height: 100%;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            padding: 0 10px;
-            font-size: 0.9rem;
-        }
-        
-        .price-input .separator {
-            width: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            color: var(--gray);
-        }
-        
-        .checkbox-group {
-            margin-bottom: 5px;
-        }
-        
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 0.95rem;
-            color: var(--gray);
-        }
-        
-        .checkbox-label input {
-            margin-right: 10px;
-        }
-        
-        .filter-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        
-        .btn-filter {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius);
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
-        .btn-filter:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        .btn-reset {
-            background-color: transparent;
-            color: var(--gray);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: var(--radius);
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
-        .btn-reset:hover {
-            background-color: var(--light);
-        }
-        
         /* Responsive */
         @media (max-width: 991px) {
             .hero-content h1 {
@@ -501,6 +345,57 @@
             .process-card {
                 margin-bottom: 20px;
             }
+        }
+        
+        /* Header and navigation improvements */
+        .header-navbar-rht .nav-link {
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            margin-left: 10px;
+            transition: all 0.2s;
+        }
+        
+        .header-navbar-rht .nav-link:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .header-navbar-rht .header-login {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .header-navbar-rht .header-login:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        .dropdown-menu {
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            padding: 10px 0;
+        }
+        
+        .dropdown-item {
+            padding: 8px 20px;
+            color: var(--dark);
+            transition: all 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--light);
+            color: var(--primary);
+        }
+        
+        .dropdown-item i {
+            margin-right: 8px;
+            color: var(--primary);
+            width: 16px;
+            text-align: center;
         }
     </style>
 </head>
@@ -567,159 +462,6 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Advanced Filters (Initially Hidden) -->
-                        <div id="advancedFilters" style="display: none;">
-                            <hr>
-                            <div class="row">
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Car Type</label>
-                                        <select name="car_type" class="form-control">
-                                            <option value="">All Types</option>
-                                            <option value="sedan">Sedan</option>
-                                            <option value="suv">SUV</option>
-                                            <option value="luxury">Luxury</option>
-                                            <option value="sports">Sports</option>
-                                            <option value="convertible">Convertible</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Brand</label>
-                                        <select name="brand" class="form-control">
-                                            <option value="">All Brands</option>
-                                            <?php
-                                            require_once 'backend/db_connect.php';
-                                            $sql = "SELECT DISTINCT brand FROM cars ORDER BY brand";
-                                            $result = $conn->query($sql);
-                                            if ($result && $result->num_rows > 0) {
-                                                while($row = $result->fetch_assoc()) {
-                                                    echo "<option value='" . htmlspecialchars($row['brand']) . "'>" . htmlspecialchars($row['brand']) . "</option>";
-                                                }
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Transmission</label>
-                                        <select name="transmission" class="form-control">
-                                            <option value="">Any</option>
-                                            <option value="automatic">Automatic</option>
-                                            <option value="manual">Manual</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Price Range (per day)</label>
-                                        <div class="price-input">
-                                            <div class="field">
-                                                <input type="number" name="min_price" class="input-min" value="50">
-                                            </div>
-                                            <div class="separator">to</div>
-                                            <div class="field">
-                                                <input type="number" name="max_price" class="input-max" value="500">
-                                            </div>
-                                        </div>
-                                        <div class="range-slider mt-2">
-                                            <div class="range-selected"></div>
-                                        </div>
-                                        <div class="range-input">
-                                            <input type="range" class="range-min" min="0" max="1000" value="50" step="10">
-                                            <input type="range" class="range-max" min="0" max="1000" value="500" step="10">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mt-3">
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Features</label>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="features[]" value="bluetooth"> Bluetooth
-                                            </label>
-                                        </div>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="features[]" value="navigation"> Navigation
-                                            </label>
-                                        </div>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="features[]" value="sunroof"> Sunroof
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Fuel Type</label>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="fuel[]" value="petrol"> Petrol
-                                            </label>
-                                        </div>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="fuel[]" value="diesel"> Diesel
-                                            </label>
-                                        </div>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="fuel[]" value="hybrid"> Hybrid
-                                            </label>
-                                        </div>
-                                        <div class="checkbox-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="fuel[]" value="electric"> Electric
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Passengers</label>
-                                        <select name="passengers" class="form-control">
-                                            <option value="">Any</option>
-                                            <option value="2">2 or more</option>
-                                            <option value="4">4 or more</option>
-                                            <option value="5">5 or more</option>
-                                            <option value="7">7 or more</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Sort By</label>
-                                        <select name="sort" class="form-control">
-                                            <option value="price_asc">Price: Low to High</option>
-                                            <option value="price_desc">Price: High to Low</option>
-                                            <option value="rating_desc">Highest Rated</option>
-                                            <option value="newest">Newest Models</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="filter-actions">
-                                <button type="button" class="btn-reset" id="resetFilters">Reset Filters</button>
-                                <button type="submit" class="btn-filter">Apply Filters</button>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center mt-3">
-                            <a href="#" id="toggleFilters" class="text-primary">
-                                <span id="showFiltersText">Show Advanced Filters</span>
-                                <span id="hideFiltersText" style="display: none;">Hide Advanced Filters</span>
-                                <i class="fas fa-chevron-down ms-1" id="filterIcon"></i>
-                            </a>
                         </div>
                     </form>
                 </div>
@@ -955,74 +697,6 @@
                 }
             });
             
-            // Toggle advanced filters
-            $('#toggleFilters').on('click', function(e) {
-                e.preventDefault();
-                $('#advancedFilters').slideToggle(300);
-                $('#showFiltersText, #hideFiltersText').toggle();
-                $('#filterIcon').toggleClass('fa-chevron-down fa-chevron-up');
-            });
-            
-            // Reset filters
-            $('#resetFilters').on('click', function() {
-                $('#searchForm')[0].reset();
-                
-                // Reset range sliders
-                $('.range-min').val(50);
-                $('.range-max').val(500);
-                $('.input-min').val(50);
-                $('.input-max').val(500);
-                updateRangeSlider();
-            });
-            
-            // Range slider functionality
-            const rangeInput = document.querySelectorAll(".range-input input");
-            const priceInput = document.querySelectorAll(".price-input input");
-            const range = document.querySelector(".range-selected");
-            let priceGap = 10;
-            
-            function updateRangeSlider() {
-                let minVal = parseInt(rangeInput[0].value);
-                let maxVal = parseInt(rangeInput[1].value);
-                
-                if ((maxVal - minVal) < priceGap) {
-                    if ($(this).hasClass("range-min")) {
-                        rangeInput[0].value = maxVal - priceGap;
-                    } else {
-                        rangeInput[1].value = minVal + priceGap;
-                    }
-                } else {
-                    priceInput[0].value = minVal;
-                    priceInput[1].value = maxVal;
-                    range.style.left = (minVal / rangeInput[0].max) * 100 + "%";
-                    range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
-                }
-            }
-            
-            rangeInput.forEach(input => {
-                input.addEventListener("input", updateRangeSlider);
-            });
-            
-            priceInput.forEach(input => {
-                input.addEventListener("input", e => {
-                    let minPrice = parseInt(priceInput[0].value);
-                    let maxPrice = parseInt(priceInput[1].value);
-                    
-                    if ((maxPrice - minPrice >= priceGap) && maxPrice <= rangeInput[1].max) {
-                        if (e.target.className === "input-min") {
-                            rangeInput[0].value = minPrice;
-                            range.style.left = (minPrice / rangeInput[0].max) * 100 + "%";
-                        } else {
-                            rangeInput[1].value = maxPrice;
-                            range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
-                        }
-                    }
-                });
-            });
-            
-            // Initialize range slider on page load
-            updateRangeSlider();
-            
             // Form validation before submission
             $('#searchForm').on('submit', function(e) {
                 var pickupDate = $('#pickup_date').val();
@@ -1035,14 +709,6 @@
                 }
                 
                 return true;
-            });
-            
-            // Fix icon alignment in car meta items
-            $('.car-meta-item i').css({
-                'display': 'inline-block',
-                'width': '16px',
-                'text-align': 'center',
-                'vertical-align': 'middle'
             });
         });
     </script>
