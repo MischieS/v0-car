@@ -228,6 +228,10 @@ include 'assets/includes/header_link.php';
           </div>
           <div class="col-md-4 mb-3"><label>Price/Day</label><input type="number" step="0.01" name="car_price_perday" id="carPrice" class="form-control" required></div>
           <div class="col-md-4 mb-3">
+            <label>Year</label>
+            <input type="number" name="year" id="carYear" class="form-control" min="1900" max="<?= date('Y') ?>" required>
+          </div>
+          <div class="col-md-4 mb-3">
             <label>Car Class</label>
             <select name="car_class" id="carClass" class="form-select" required>
               <option value="">Select class</option>
@@ -236,7 +240,6 @@ include 'assets/includes/header_link.php';
               <option value="Premium">Premium</option>
             </select>
           </div>
-          <div class="col-md-4 mb-3"><label>Year</label><input type="number" name="year" id="carYear" class="form-control" min="1900" max="<?= date('Y') ?>" required></div>
           <div class="col-md-4 mb-3">
             <label>Location</label>
             <select name="location_id" id="carLocation" class="form-select" required>
@@ -338,33 +341,6 @@ function openEditModal(car) {
   document.getElementById('previewGallery').innerHTML = '';
   new bootstrap.Modal(document.getElementById('carModal')).show();
 }
-
-<script>
-document.getElementById('carImages').addEventListener('change', function (e) {
-  const previewGallery = document.getElementById('previewGallery');
-  previewGallery.innerHTML = ''; // clear previous
-
-  const files = e.target.files;
-  if (!files.length) return;
-
-  Array.from(files).forEach(file => {
-    if (!file.type.startsWith('image/')) return;
-
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      const img = document.createElement('img');
-      img.src = event.target.result;
-      img.className = 'rounded border';
-      img.style.height = '80px';
-      img.style.objectFit = 'cover';
-      img.style.marginRight = '6px';
-      previewGallery.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  });
-});
-</script>
-
 </script>
 
 <?php include 'assets/includes/footer.php'; ?>

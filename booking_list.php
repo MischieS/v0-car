@@ -6,7 +6,7 @@ require_once __DIR__ . '/backend/db_connect.php';
 // Filters
 $q         = trim($_GET['q'] ?? '');
 $class     = trim($_GET['class'] ?? '');
-$trans     = trim($_GET[''] ?? '');
+$trans     = trim($_GET['transmission'] ?? '');
 $year      = trim($_GET['year'] ?? '');
 
 // Build dynamic SQL with a join to locations
@@ -39,7 +39,7 @@ if ($class) {
 
 //  filter
 if ($trans) {
-    $sql      .= " AND c. = ?";
+    $sql      .= " AND c.transmission = ?";
     $params[]  = $trans;
     $types    .= 's';
 }
@@ -118,8 +118,8 @@ $cars = $stmt->get_result();
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label"></label>
-                                <select name="" class="form-select form-select-sm">
+                                <label class="form-label">Transmission</label>
+                                <select name="transmission" class="form-select form-select-sm">
                                     <option value="">Any</option>
                                     <option value="manual" <?= $trans === 'manual'    ? 'selected' : '' ?>>Manual</option>
                                     <option value="automatic" <?= $trans === 'automatic' ? 'selected' : '' ?>>Automatic</option>
@@ -173,7 +173,7 @@ $cars = $stmt->get_result();
                                         <ul class="listing-details-group">
                                             <li>
                                                 <i class="fas fa-cogs me-1"></i>
-                                                <?= ucfirst($car['']) ?>
+                                                <?= ucfirst($car['gear_name'] ?? 'N/A') ?>
                                             </li>
                                             <li>
                                                 <i class="fas fa-calendar-alt me-1"></i>
