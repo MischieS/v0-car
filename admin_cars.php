@@ -264,52 +264,73 @@ include 'assets/includes/header_link.php';
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.getElementById('carImages').addEventListener('change', function (e) {
-  const previewGallery = document.getElementById('previewGallery');
-  previewGallery.innerHTML = '';
-  Array.from(e.target.files).forEach(file => {
-    if (!file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      const img = document.createElement('img');
-      img.src = event.target.result;
-      img.className = 'rounded border';
-      img.style.height = '80px';
-      img.style.objectFit = 'cover';
-      img.style.marginRight = '6px';
-      previewGallery.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  });
-});
-
-document.getElementById('carBrand').addEventListener('change', function () {
-  const brandId = this.value;
-  const modelSelect = document.getElementById('carModel');
-  modelSelect.innerHTML = '<option>Loading...</option>';
-  fetch('backend/get_models.php?brand_id=' + brandId)
-    .then(res => res.json())
-    .then(data => {
-      modelSelect.innerHTML = '<option value="">Select model</option>';
-      data.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.id;
-        opt.textContent = m.model_name;
-        modelSelect.appendChild(opt);
-      });
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Image preview functionality
+  const carImagesInput = document.getElementById('carImages');
+  if (carImagesInput) {
+    carImagesInput.addEventListener('change', function(e) {
+      const previewGallery = document.getElementById('previewGallery');
+      previewGallery.innerHTML = ''; // Clear previous previews
+      
+      if (this.files && this.files.length > 0) {
+        Array.from(this.files).forEach(file => {
+          if (!file.type.startsWith('image/')) return;
+          
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.className = 'rounded border';
+            img.style.height = '80px';
+            img.style.objectFit = 'cover';
+            img.style.marginRight = '6px';
+            img.style.marginBottom = '6px';
+            previewGallery.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
     });
-});
+  }
 
-function openAddModal() {
+// Brand change event - load related models
+const carBrand = document.getElementById('carBrand');
+if (carBrand) {
+  carBrand.addEventListener('change', function() {
+    const brandId = this.value;
+    const modelSelect = document.getElementById('carModel');
+    modelSelect.innerHTML = '<option>Loading...</option>';
+    
+    fetch('backend/get_models.php?brand_id=' + brandId)
+      .then(res => res.json())
+      .then(data => {
+        modelSelect.innerHTML = '<option value="">Select model</option>';
+        data.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          opt.textContent = m.model_name;
+          modelSelect.appendChild(opt);
+        });
+      })
+      .catch(err => {
+        console.error('Error loading models:', err);
+        modelSelect.innerHTML = '<option value="">Error loading models</option>';
+      });
+  });
+}
+
+// Define modal functions in global scope for button onclick access
+window.openAddModal = function() {
   document.getElementById('carForm').reset();
   document.getElementById('modalTitle').textContent = 'Add Car';
   document.getElementById('formAction').value = 'add';
   document.getElementById('carId').value = '';
   document.getElementById('previewGallery').innerHTML = '';
   new bootstrap.Modal(document.getElementById('carModal')).show();
-}
+};
 
-function openEditModal(car) {
+window.openEditModal = function(car) {
   document.getElementById('modalTitle').textContent = 'Edit Car';
   document.getElementById('formAction').value = 'edit';
   document.getElementById('carId').value = car.car_id;
@@ -340,7 +361,8 @@ function openEditModal(car) {
   document.getElementById('carImages').value = '';
   document.getElementById('previewGallery').innerHTML = '';
   new bootstrap.Modal(document.getElementById('carModal')).show();
-}
+};
+});
 </script>
 
 <?php include 'assets/includes/footer.php'; ?>

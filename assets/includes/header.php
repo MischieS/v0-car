@@ -51,28 +51,30 @@
 						</ul>
 					</div>
 					<?php if (isset($_SESSION["user_id"])): ?>
-						<li class="nav-item dropdown has-arrow logged-item">
-							<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-								<span class="user-text">Welcome, <?= htmlspecialchars($_SESSION["user_name"]) ?></span>
-							</a>
-							<div class="dropdown-menu dropdown-menu-end">
-								<?php if ($_SESSION["user_role"] === "admin"): ?>
-									<a class="dropdown-item" href="admin_dashboard.php">
-										<i class="feather-shield"></i> Admin Dashboard
-									</a>
-								<?php else: ?>
-									<a class="dropdown-item" href="user_dashboard.php">
-										<i class="feather-user-check"></i> User Dashboard
-									</a>
-								<?php endif; ?>
-								<a class="dropdown-item" href="user_settings.php">
-									<i class="feather-settings"></i> Settings
+						<ul class="nav header-navbar-rht">
+							<li class="nav-item dropdown">
+								<a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+									<span>Welcome, <?= htmlspecialchars($_SESSION["user_name"]) ?></span>
 								</a>
-								<a class="dropdown-item" href="backend/logout.php">
-									<i class="feather-power"></i> Logout
-								</a>
-							</div>
-						</li>
+								<div class="dropdown-menu">
+									<?php if ($_SESSION["user_role"] === "admin"): ?>
+										<a class="dropdown-item" href="admin_dashboard.php">
+											<i class="feather-shield"></i> Admin Dashboard
+										</a>
+									<?php else: ?>
+										<a class="dropdown-item" href="user_dashboard.php">
+											<i class="feather-user-check"></i> User Dashboard
+										</a>
+									<?php endif; ?>
+									<a class="dropdown-item" href="user_settings.php">
+										<i class="feather-settings"></i> Settings
+									</a>
+									<a class="dropdown-item" href="backend/logout.php">
+										<i class="feather-power"></i> Logout
+									</a>
+								</div>
+							</li>
+						</ul>
 					<?php else: ?>
 						<ul class="nav header-navbar-rht">
 							<li class="nav-item">
