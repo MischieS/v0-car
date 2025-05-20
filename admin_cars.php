@@ -94,8 +94,8 @@ include 'assets/includes/header_link.php';
           <ul class="nav justify-content-center">
             <li><a href="admin_dashboard.php"><img src="assets/img/icons/dashboard-icon.svg"><span>Dashboard</span></a></li>
             <li><a href="admin_bookings.php"><img src="assets/img/icons/booking-icon.svg"><span>Bookings</span></a></li>
-            <li><a href="admin_cars.php" class="active"><img src="assets/img/icons/car-icon.svg" alt="Icon"><span>Cars</span></a></li>
-            <li><a href="admin_users.php"><img src="assets/img/icons/user-icon.svg" alt="Icon"><span>Users</span></a></li>
+            <li><a href="admin_cars.php" class="active"><img src="assets/img/icons/car-rental-icon.svg" alt="Icon"><span>Cars</span></a></li>
+            <li><a href="admin_users.php"><img src="assets/img/icons/profile-icon.svg" alt="Icon"><span>Users</span></a></li>
             <li><a href="user_settings.php"><img src="assets/img/icons/settings-icon.svg"><span>Settings</span></a></li>
           </ul>
         </div>

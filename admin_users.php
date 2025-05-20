@@ -166,13 +166,13 @@ function get_pagination_url($page) {
               </li>
               <li>
                 <a href="admin_cars.php">
-                  <img src="assets/img/icons/car-icon.svg" alt="Icon">
+                  <img src="assets/img/icons/car-rental-icon.svg" alt="Icon">
                   <span>Cars</span>
                 </a>
               </li>
               <li>
                 <a href="admin_users.php" class="active">
-                  <img src="assets/img/icons/user-icon.svg" alt="Icon">
+                  <img src="assets/img/icons/profile-icon.svg" alt="Icon">
                   <span>Users</span>
                 </a>
               </li>
