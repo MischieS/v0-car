@@ -70,19 +70,39 @@ if (isset($_POST['update_profile'])) {
     
     // Handle profile photo upload if exists
     if (!empty($_POST['cropped_profile'])) {
+        // Create directory if it doesn't exist
+        $uploadDir = __DIR__ . '/../assets/img/profiles/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Process the base64 image
         $img = $_POST['cropped_profile'];
-        $img = str_replace('data:image/jpeg;base64,', '', $img);
-        $img = str_replace(' ', '+', $img);
+        $img = preg_replace('#^data:image/\w+;base64,#i', '', $img);
         $data = base64_decode($img);
         
-        $fileName = 'user_' . $user_id . '_' . time() . '.jpg';
-        $filePath = __DIR__ . '/../assets/img/profiles/' . $fileName;
-        
-        if (file_put_contents($filePath, $data)) {
-            // Update profile_photo field
-            $photoStmt = $conn->prepare("UPDATE users SET user_profile_image = ? WHERE user_id = ?");
-            $photoStmt->bind_param('si', $fileName, $user_id);
-            $photoStmt->execute();
+        if ($data) {
+            $fileName = 'user_' . $user_id . '_' . time() . '.jpg';
+            $filePath = $uploadDir . $fileName;
+            
+            if (file_put_contents($filePath, $data)) {
+                // Update profile image field
+                $photoStmt = $conn->prepare("UPDATE users SET user_profile_image = ? WHERE user_id = ?");
+                $photoStmt->bind_param('si', $fileName, $user_id);
+                $photoStmt->execute();
+                
+                // Log activity
+                $activityDesc = "Profile picture updated";
+                $activityType = "profile_update";
+                
+                // Check if user_activity table exists before logging
+                $result = $conn->query("SHOW TABLES LIKE 'user_activity'");
+                if ($result->num_rows > 0) {
+                    $logStmt = $conn->prepare("INSERT INTO user_activity (user_id, activity_type, activity_description) VALUES (?, ?, ?)");
+                    $logStmt->bind_param('iss', $user_id, $activityType, $activityDesc);
+                    $logStmt->execute();
+                }
+            }
         }
     }
     

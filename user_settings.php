@@ -14,9 +14,22 @@ $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
-$profileImg = $user['user_profile_image'] 
-    ? 'assets/img/profiles/' . htmlspecialchars($user['user_profile_image']) 
-    : 'assets/img/profiles/default.png';
+
+// Check if profile directory exists, if not create it
+$profileDir = 'assets/img/profiles';
+if (!file_exists($profileDir)) {
+    mkdir($profileDir, 0755, true);
+}
+
+// Check if default image exists, if not use a placeholder
+$defaultImg = 'assets/img/profiles/default.png';
+if (!file_exists($defaultImg)) {
+    $defaultImg = 'assets/img/avatar.jpg'; // Fallback to a common avatar
+}
+
+$profileImg = !empty($user['user_profile_image']) && file_exists($profileDir . '/' . $user['user_profile_image'])
+    ? $profileDir . '/' . $user['user_profile_image']
+    : $defaultImg;
 
 // Check if user_activity table exists
 $activityTableExists = false;
@@ -233,31 +246,7 @@ if ($result->num_rows > 0) {
             </div>
           </div>
           
-          <div class="settings-card">
-            <div class="card-header">
-              <h5 class="mb-0">Account Status</h5>
-            </div>
-            <div class="card-body">
-              <div class="d-flex align-items-center mb-3">
-                <div class="flex-shrink-0">
-                  <i class="fas fa-shield-alt text-success fs-4"></i>
-                </div>
-                <div class="flex-grow-1 ms-3">
-                  <h6 class="mb-0">Account Verified</h6>
-                  <small class="text-muted">Your account is verified and active</small>
-                </div>
-              </div>
-              <div class="d-flex align-items-center">
-                <div class="flex-shrink-0">
-                  <i class="fas fa-clock text-primary fs-4"></i>
-                </div>
-                <div class="flex-grow-1 ms-3">
-                  <h6 class="mb-0">Member Since</h6>
-                  <small class="text-muted"><?= isset($user['created_at']) ? date('F d, Y', strtotime($user['created_at'])) : 'N/A' ?></small>
-                </div>
-              </div>
-            </div>
-          </div>
+          
         </div>
         
         <!-- Settings Content -->
@@ -566,13 +555,29 @@ uploadInput.addEventListener('change', e => {
 });
 
 document.getElementById('crop-btn').addEventListener('click', () => {
-  const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
-  const croppedImage = canvas.toDataURL('image/jpeg');
-  
-  document.getElementById('preview-image').src = croppedImage;
-  document.getElementById('cropped_profile').value = croppedImage;
-  
-  cropModal.hide();
+  try {
+    const canvas = cropper.getCroppedCanvas({ 
+      width: 300, 
+      height: 300,
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: 'high'
+    });
+    
+    if (!canvas) {
+      alert('Error cropping image. Please try again with a different image.');
+      return;
+    }
+    
+    const croppedImage = canvas.toDataURL('image/jpeg', 0.9);
+    
+    document.getElementById('preview-image').src = croppedImage;
+    document.getElementById('cropped_profile').value = croppedImage;
+    
+    cropModal.hide();
+  } catch (e) {
+    console.error('Error cropping image:', e);
+    alert('Error processing image. Please try again.');
+  }
 });
 
 // Password strength meter
