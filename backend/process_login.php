@@ -4,24 +4,32 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Enable error reporting for debugging
+// Enable error reporting for debugging (comment out in production)
 // error_reporting(E_ALL);
 // ini_set('display_errors', 1);
 
-// Include database connection
-require_once 'db_connect.php';
-
-// Include activity logging function if available
-if (file_exists(__DIR__ . '/log_activity.php')) {
-    require_once __DIR__ . '/log_activity.php';
-}
-
 // Function to log errors to a file
-function logError($message) {
+function logLoginError($message) {
     $logFile = __DIR__ . '/login_errors.log';
     $timestamp = date('Y-m-d H:i:s');
     $logMessage = "[$timestamp] $message\n";
     file_put_contents($logFile, $logMessage, FILE_APPEND);
+}
+
+// Include database connection
+require_once 'db_connect.php';
+
+// Check if database connection failed
+if ($conn === null) {
+    logLoginError("Database connection failed");
+    $_SESSION["login_error"] = "Database error. Please try again later.";
+    header("Location: ../login.php");
+    exit();
+}
+
+// Include activity logging function if available
+if (file_exists(__DIR__ . '/log_activity.php')) {
+    require_once __DIR__ . '/log_activity.php';
 }
 
 // Check if form was submitted
@@ -31,6 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = isset($_POST["email"]) ? trim($_POST["email"]) : '';
         $password = isset($_POST["password"]) ? $_POST["password"] : '';
         $remember = isset($_POST["remember"]) ? true : false;
+        
+        // Log attempt (for debugging)
+        logLoginError("Login attempt for email: $email");
         
         // Validate inputs
         if (empty($email) || empty($password)) {
@@ -46,31 +57,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
         
-        // Debug
-        // logError("Attempting login for email: $email");
+        // Check if users table exists
+        $tableCheck = $conn->query("SHOW TABLES LIKE 'users'");
+        if ($tableCheck->num_rows == 0) {
+            logLoginError("Users table does not exist");
+            $_SESSION["login_error"] = "Database configuration error. Please contact support.";
+            header("Location: ../login.php");
+            exit();
+        }
         
         // Check if email exists in database
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         if (!$stmt) {
-            logError("Prepare failed: " . $conn->error);
+            logLoginError("Prepare failed: " . $conn->error);
             $_SESSION["login_error"] = "Database error. Please try again later.";
             header("Location: ../login.php");
             exit();
         }
         
         $stmt->bind_param("s", $email);
-        $stmt->execute();
+        
+        if (!$stmt->execute()) {
+            logLoginError("Execute failed: " . $stmt->error);
+            $_SESSION["login_error"] = "Database error. Please try again later.";
+            header("Location: ../login.php");
+            exit();
+        }
+        
         $result = $stmt->get_result();
         
         if ($result && $result->num_rows === 1) {
             $user = $result->fetch_assoc();
             
-            // Debug
-            // logError("User found: " . print_r($user, true));
+            // Log user data (for debugging)
+            logLoginError("User found: " . json_encode($user));
             
             // Check if password field exists in the database
             if (!isset($user["password"])) {
-                logError("Password field not found in user record");
+                logLoginError("Password field not found in user record");
                 $_SESSION["login_error"] = "Account configuration error. Please contact support.";
                 header("Location: ../login.php");
                 exit();
@@ -84,8 +108,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION["user_email"] = $user["email"];
                 $_SESSION["user_role"] = $user["role"];
                 
-                // Debug
-                // logError("Session set: " . print_r($_SESSION, true));
+                // Log successful login
+                logLoginError("Login successful for user ID: " . $user["id"]);
                 
                 // Log the successful login activity if function exists
                 if (function_exists('logActivity')) {
@@ -94,6 +118,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                 // Set remember me cookie if checked
                 if ($remember) {
+                    // Check if user_tokens table exists
+                    $tableCheck = $conn->query("SHOW TABLES LIKE 'user_tokens'");
+                    if ($tableCheck->num_rows == 0) {
+                        // Create user_tokens table
+                        $sql = "CREATE TABLE IF NOT EXISTS `user_tokens` (
+                            `id` INT(11) NOT NULL AUTO_INCREMENT,
+                            `user_id` INT(11) NOT NULL,
+                            `token` VARCHAR(255) NOT NULL,
+                            `expires` DATETIME NOT NULL,
+                            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            PRIMARY KEY (`id`),
+                            FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+                        
+                        if (!$conn->query($sql)) {
+                            logLoginError("Failed to create user_tokens table: " . $conn->error);
+                        }
+                    }
+                    
                     // Generate a secure token
                     $token = bin2hex(random_bytes(32));
                     $expires = time() + (30 * 24 * 60 * 60); // 30 days
@@ -118,21 +161,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 exit();
             } else {
-                // Debug
-                // logError("Password verification failed");
+                logLoginError("Password verification failed for email: $email");
                 $_SESSION["login_error"] = "Invalid email or password";
                 header("Location: ../login.php");
                 exit();
             }
         } else {
-            // Debug
-            // logError("User not found for email: $email");
+            logLoginError("User not found for email: $email");
             $_SESSION["login_error"] = "Invalid email or password";
             header("Location: ../login.php");
             exit();
         }
     } catch (Exception $e) {
-        logError("Exception: " . $e->getMessage());
+        logLoginError("Exception: " . $e->getMessage());
         $_SESSION["login_error"] = "An error occurred. Please try again later.";
         header("Location: ../login.php");
         exit();
