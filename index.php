@@ -303,54 +303,6 @@
             color: var(--gray);
         }
         
-        /* CTA section */
-        .cta-section {
-            background-color: var(--primary);
-            color: white;
-            text-align: center;
-            padding: 60px 0;
-        }
-        
-        .cta-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        
-        .cta-description {
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            opacity: 0.9;
-        }
-        
-        .btn-cta {
-            background-color: white;
-            color: var(--primary);
-            border: none;
-            height: 48px;
-            border-radius: var(--radius);
-            font-weight: 600;
-            padding: 12px 30px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .btn-cta:hover {
-            background-color: var(--light);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            color: var(--primary);
-            text-decoration: none;
-        }
-        
-        .btn-cta i {
-            margin-left: 8px;
-        }
-        
         /* Filter section */
         .filter-section {
             background-color: #fff;
@@ -971,16 +923,6 @@
         </section>
         <!-- /How It Works Section -->
         
-        <!-- CTA Section -->
-        <section class="cta-section">
-            <div class="container">
-                <h2 class="cta-title">Ready to hit the road?</h2>
-                <p class="cta-description">Book your dream car today and enjoy the freedom of the open road.</p>
-                <a href="booking_list.php" class="btn-cta">Book Now <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </section>
-        <!-- /CTA Section -->
-        
         <!-- Footer -->
         <?php include('assets/includes/footer.php') ?>
         <!-- /Footer -->
@@ -1093,6 +1035,14 @@
                 }
                 
                 return true;
+            });
+            
+            // Fix icon alignment in car meta items
+            $('.car-meta-item i').css({
+                'display': 'inline-block',
+                'width': '16px',
+                'text-align': 'center',
+                'vertical-align': 'middle'
             });
         });
     </script>
