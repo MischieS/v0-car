@@ -3,6 +3,14 @@
 session_start();
 require_once __DIR__ . '/backend/db_connect.php';
 
+// Check if the reservations table exists
+$tableCheck = $conn->query("SHOW TABLES LIKE 'reservations'");
+if ($tableCheck->num_rows == 0) {
+    // Table doesn't exist, redirect to database setup
+    header("Location: backend/db_setup.php");
+    exit;
+}
+
 // Filters
 $q         = trim($_GET['q'] ?? '');
 $class     = trim($_GET['class'] ?? '');
