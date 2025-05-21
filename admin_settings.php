@@ -235,29 +235,53 @@ function getSetting($settings, $group, $name, $default = '') {
             color: #555;
             padding: 1rem;
             font-weight: 500;
+            border-radius: 0;
+            transition: all 0.3s ease;
         }
         .nav-tabs .nav-link.active {
             color: #ff5b00;
-            border-bottom: 2px solid #ff5b00;
+            border-bottom: 3px solid #ff5b00;
             background: transparent;
+            font-weight: 600;
         }
         .nav-tabs .nav-link:hover:not(.active) {
-            border-bottom: 2px solid #ddd;
+            border-bottom: 3px solid #ddd;
+            background-color: #f8f9fa;
         }
         .form-label {
             font-weight: 500;
+            color: #444;
         }
         .settings-card {
             transition: all 0.3s ease;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
         }
         .settings-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .settings-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+        }
+        .settings-card .card-body {
+            padding: 20px;
         }
         .activity-item {
             border-left: 3px solid #ff5b00;
             padding-left: 15px;
             margin-bottom: 15px;
             position: relative;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
         .activity-item::before {
             content: '';
@@ -275,9 +299,10 @@ function getSetting($settings, $group, $name, $default = '') {
         }
         .password-strength-meter {
             height: 5px;
-            background: #ddd;
+            background: #eee;
             margin-top: 5px;
             border-radius: 3px;
+            overflow: hidden;
         }
         .password-strength-meter div {
             height: 100%;
@@ -287,6 +312,7 @@ function getSetting($settings, $group, $name, $default = '') {
         .password-requirements li {
             font-size: 0.8rem;
             color: #777;
+            transition: all 0.3s ease;
         }
         .password-requirements li.met {
             color: #28a745;
@@ -301,9 +327,43 @@ function getSetting($settings, $group, $name, $default = '') {
             border-left: 3px solid #17a2b8;
             padding-left: 15px;
             margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
         }
         .session-item.current {
             border-left-color: #28a745;
+            background-color: #f0fff0;
+        }
+        .btn-primary {
+            background-color: #ff5b00;
+            border-color: #ff5b00;
+        }
+        .btn-primary:hover {
+            background-color: #e65100;
+            border-color: #e65100;
+        }
+        .btn-outline-primary {
+            color: #ff5b00;
+            border-color: #ff5b00;
+        }
+        .btn-outline-primary:hover {
+            background-color: #ff5b00;
+            border-color: #ff5b00;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #ff5b00;
+            box-shadow: 0 0 0 0.25rem rgba(255, 91, 0, 0.25);
+        }
+        .form-check-input:checked {
+            background-color: #ff5b00;
+            border-color: #ff5b00;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+        .dashboard-menu ul li a.active {
+            background-color: #ff5b00;
         }
     </style>
 </head>
@@ -314,8 +374,13 @@ function getSetting($settings, $group, $name, $default = '') {
         <!-- Breadcrumb -->
         <div class="breadcrumb-bar">
             <div class="container">
-                <div class="row align-items-center text-center">
+                <div class="row align-items-center">
                     <div class="col-md-12 col-12">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <a href="admin_dashboard.php" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                            </a>
+                        </div>
                         <h2 class="breadcrumb-title">Admin Settings</h2>
                         <nav aria-label="breadcrumb" class="page-breadcrumb">
                             <ol class="breadcrumb">
@@ -402,47 +467,47 @@ function getSetting($settings, $group, $name, $default = '') {
                     <div class="col-md-12">
                         <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
+                                <button class="nav-link active d-flex align-items-center" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
                                     <i class="fas fa-user me-2"></i>Profile
                                 </button>
                             </li>
                             <?php if ($settingsTableExists): ?>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">
                                     <i class="fas fa-cog me-2"></i>General
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">
                                     <i class="fas fa-envelope me-2"></i>Contact
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking" type="button" role="tab" aria-controls="booking" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking" type="button" role="tab" aria-controls="booking" aria-selected="false">
                                     <i class="fas fa-calendar-alt me-2"></i>Booking
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">
                                     <i class="fas fa-credit-card me-2"></i>Payment
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="social-tab" data-bs-toggle="tab" data-bs-target="#social" type="button" role="tab" aria-controls="social" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="social-tab" data-bs-toggle="tab" data-bs-target="#social" type="button" role="tab" aria-controls="social" aria-selected="false">
                                     <i class="fas fa-share-alt me-2"></i>Social
                                 </button>
                             </li>
                             <?php endif; ?>
                             <?php if ($sessionsTableExists): ?>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
                                     <i class="fas fa-shield-alt me-2"></i>Security
                                 </button>
                             </li>
                             <?php endif; ?>
                             <?php if ($activityTableExists): ?>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">
+                                <button class="nav-link d-flex align-items-center" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">
                                     <i class="fas fa-history me-2"></i>Activity
                                 </button>
                             </li>
@@ -456,7 +521,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                     <!-- Admin Profile -->
                                     <div class="col-lg-6">
                                         <div class="card settings-card mb-4">
-                                            <div class="card-header bg-light">
+                                            <div class="card-header">
                                                 <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Admin Profile</h5>
                                             </div>
                                             <div class="card-body">
@@ -490,7 +555,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                                     </div>
                                                     
                                                     <div class="d-grid">
-                                                        <button type="submit" class="btn btn-primary">
+                                                        <button type="submit" class="btn btn-primary btn-lg">
                                                             <i class="fas fa-save me-2"></i>Save Profile
                                                         </button>
                                                     </div>
@@ -502,7 +567,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                     <!-- Change Password -->
                                     <div class="col-lg-6">
                                         <div class="card settings-card mb-4">
-                                            <div class="card-header bg-light">
+                                            <div class="card-header">
                                                 <h5 class="mb-0"><i class="fas fa-key me-2"></i>Change Password</h5>
                                             </div>
                                             <div class="card-body">
@@ -554,7 +619,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                                     </div>
                                                     
                                                     <div class="d-grid">
-                                                        <button type="submit" class="btn btn-primary" id="change-password-btn" disabled>
+                                                        <button type="submit" class="btn btn-primary btn-lg" id="change-password-btn" disabled>
                                                             <i class="fas fa-key me-2"></i>Change Password
                                                         </button>
                                                     </div>
@@ -569,7 +634,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <?php if ($settingsTableExists): ?>
                             <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-cog me-2"></i>General Settings</h5>
                                     </div>
                                     <div class="card-body">
@@ -597,7 +662,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                             </div>
                                             
                                             <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-primary btn-lg">
                                                     <i class="fas fa-save me-2"></i>Save General Settings
                                                 </button>
                                             </div>
@@ -609,7 +674,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <!-- Contact Settings Tab -->
                             <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Contact Information</h5>
                                     </div>
                                     <div class="card-body">
@@ -633,7 +698,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                             </div>
                                             
                                             <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-primary btn-lg">
                                                     <i class="fas fa-save me-2"></i>Save Contact Information
                                                 </button>
                                             </div>
@@ -645,7 +710,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <!-- Booking Settings Tab -->
                             <div class="tab-pane fade" id="booking" role="tabpanel" aria-labelledby="booking-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Booking Settings</h5>
                                     </div>
                                     <div class="card-body">
@@ -673,7 +738,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                             </div>
                                             
                                             <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-primary btn-lg">
                                                     <i class="fas fa-save me-2"></i>Save Booking Settings
                                                 </button>
                                             </div>
@@ -685,7 +750,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <!-- Payment Settings Tab -->
                             <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment Settings</h5>
                                     </div>
                                     <div class="card-body">
@@ -710,7 +775,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                             </div>
                                             
                                             <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-primary btn-lg">
                                                     <i class="fas fa-save me-2"></i>Save Payment Settings
                                                 </button>
                                             </div>
@@ -722,7 +787,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <!-- Social Media Tab -->
                             <div class="tab-pane fade" id="social" role="tabpanel" aria-labelledby="social-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Social Media Links</h5>
                                     </div>
                                     <div class="card-body">
@@ -755,7 +820,7 @@ function getSetting($settings, $group, $name, $default = '') {
                                             </div>
                                             
                                             <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-primary btn-lg">
                                                     <i class="fas fa-save me-2"></i>Save Social Media Links
                                                 </button>
                                             </div>
@@ -769,7 +834,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <?php if ($sessionsTableExists): ?>
                             <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Active Sessions</h5>
                                     </div>
                                     <div class="card-body">
@@ -836,7 +901,7 @@ function getSetting($settings, $group, $name, $default = '') {
                             <?php if ($activityTableExists): ?>
                             <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
                                 <div class="card settings-card mb-4">
-                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-history me-2"></i>User Activity Log</h5>
                                         <div>
                                             <button class="btn btn-sm btn-outline-primary">

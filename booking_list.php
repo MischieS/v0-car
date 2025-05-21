@@ -59,7 +59,7 @@ if ($year) {
     $types    .= 'i';
 }
 
-$sql .= " ORDER BY c.created_at DESC";
+$sql .= " ORDER BY c.car_id DESC";
 
 $stmt = $conn->prepare($sql);
 if ($types) {
