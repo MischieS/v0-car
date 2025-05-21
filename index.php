@@ -11,7 +11,7 @@ require_once 'backend/db_connect.php';
 $tableCheck = $conn->query("SHOW TABLES LIKE 'cars'");
 if ($tableCheck->num_rows == 0) {
     // Table doesn't exist, redirect to database setup
-    header("Location: backend/db_setup.php");
+    header("Location: backend/setup_database.php");
     exit;
 }
 

@@ -7,7 +7,7 @@ require_once __DIR__ . '/backend/db_connect.php';
 $tableCheck = $conn->query("SHOW TABLES LIKE 'reservations'");
 if ($tableCheck->num_rows == 0) {
     // Table doesn't exist, redirect to database setup
-    header("Location: backend/db_setup.php");
+    header("Location: backend/setup_database.php");
     exit;
 }
 
@@ -268,7 +268,7 @@ $cars = $stmt->get_result();
             <ul class="listing-details-group">
                 <li>
                     <i class="fas fa-cogs me-1"></i>
-                    <?= ucfirst($car['gear_name'] ?? 'N/A') ?>
+                    <?= ucfirst($car['transmission'] ?? 'Automatic') ?>
                 </li>
                 <li>
                     <i class="fas fa-calendar-alt me-1"></i>
