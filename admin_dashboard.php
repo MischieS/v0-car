@@ -18,30 +18,65 @@ $total_spent = 0;
 $total_bookings = 0;
 
 // Try to get active bookings count
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM reservations WHERE status = 'active'");
-if ($stmt && $stmt->execute()) {
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $active_bookings = $row['count'];
+$active_bookings = 0;
+try {
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM reservations WHERE status = 'active'");
+    if ($stmt && $stmt->execute()) {
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $active_bookings = $row['count'];
+        }
     }
+} catch (Exception $e) {
+    // Silently handle the error
+    $active_bookings = 0;
 }
 
-// Try to get total spent
-$stmt = $conn->prepare("SELECT SUM(total_amount) as total FROM reservations WHERE status = 'completed'");
-if ($stmt && $stmt->execute()) {
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $total_spent = $row['total'] ?? 0;
+// Try to get total spent - using price instead of total_amount
+$total_spent = 0;
+try {
+    // First check if the price column exists in the reservations table
+    $check_column = $conn->query("SHOW COLUMNS FROM reservations LIKE 'price'");
+    
+    if ($check_column->num_rows > 0) {
+        $stmt = $conn->prepare("SELECT SUM(price) as total FROM reservations WHERE status = 'completed'");
+        if ($stmt && $stmt->execute()) {
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                $total_spent = $row['total'] ?? 0;
+            }
+        }
+    } else {
+        // If price column doesn't exist, try total_price
+        $check_column = $conn->query("SHOW COLUMNS FROM reservations LIKE 'total_price'");
+        if ($check_column->num_rows > 0) {
+            $stmt = $conn->prepare("SELECT SUM(total_price) as total FROM reservations WHERE status = 'completed'");
+            if ($stmt && $stmt->execute()) {
+                $result = $stmt->get_result();
+                if ($row = $result->fetch_assoc()) {
+                    $total_spent = $row['total'] ?? 0;
+                }
+            }
+        }
     }
+} catch (Exception $e) {
+    // Silently handle the error - we'll just show $0.00
+    $total_spent = 0;
 }
 
 // Try to get total bookings
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM reservations");
-if ($stmt && $stmt->execute()) {
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $total_bookings = $row['count'];
+$total_bookings = 0;
+try {
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM reservations");
+    if ($stmt && $stmt->execute()) {
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $total_bookings = $row['count'];
+        }
     }
+} catch (Exception $e) {
+    // Silently handle the error
+    $total_bookings = 0;
 }
 ?>
 <!DOCTYPE html>
@@ -329,40 +364,44 @@ if ($stmt && $stmt->execute()) {
                     
                     <?php
                     // Fetch recent bookings
-                    $stmt = $conn->prepare("
-                        SELECT r.reservation_id, c.car_type, r.start_date, r.end_date, r.status
-                        FROM reservations r
-                        JOIN cars c ON r.car_id = c.car_id
-                        ORDER BY r.created_at DESC
-                        LIMIT 5
-                    ");
-                    
                     $has_reservations = false;
-                    
-                    if ($stmt && $stmt->execute()) {
-                        $result = $stmt->get_result();
-                        if ($result->num_rows > 0) {
-                            $has_reservations = true;
-                            echo '<div class="list-group">';
-                            while ($row = $result->fetch_assoc()) {
-                                $status_class = '';
-                                switch ($row['status']) {
-                                    case 'active': $status_class = 'bg-primary'; break;
-                                    case 'completed': $status_class = 'bg-success'; break;
-                                    case 'cancelled': $status_class = 'bg-danger'; break;
-                                    default: $status_class = 'bg-secondary';
+                    try {
+                        $stmt = $conn->prepare("
+                            SELECT r.reservation_id, c.car_type, r.start_date, r.end_date, r.status
+                            FROM reservations r
+                            JOIN cars c ON r.car_id = c.car_id
+                            ORDER BY r.reservation_id DESC
+                            LIMIT 5
+                        ");
+                        
+                        if ($stmt && $stmt->execute()) {
+                            $result = $stmt->get_result();
+                            if ($result->num_rows > 0) {
+                                $has_reservations = true;
+                                echo '<div class="list-group">';
+                                while ($row = $result->fetch_assoc()) {
+                                    $status_class = '';
+                                    switch ($row['status']) {
+                                        case 'active': $status_class = 'bg-primary'; break;
+                                        case 'completed': $status_class = 'bg-success'; break;
+                                        case 'cancelled': $status_class = 'bg-danger'; break;
+                                        default: $status_class = 'bg-secondary';
+                                    }
+                                    
+                                    echo '<a href="booking_detail.php?id=' . $row['reservation_id'] . '" class="list-group-item list-group-item-action">';
+                                    echo '<div class="d-flex w-100 justify-content-between">';
+                                    echo '<h5 class="mb-1">' . htmlspecialchars($row['car_type']) . '</h5>';
+                                    echo '<span class="badge ' . $status_class . '">' . ucfirst($row['status']) . '</span>';
+                                    echo '</div>';
+                                    echo '<p class="mb-1">From: ' . date('M d, Y', strtotime($row['start_date'])) . ' - To: ' . date('M d, Y', strtotime($row['end_date'])) . '</p>';
+                                    echo '</a>';
                                 }
-                                
-                                echo '<a href="booking_detail.php?id=' . $row['reservation_id'] . '" class="list-group-item list-group-item-action">';
-                                echo '<div class="d-flex w-100 justify-content-between">';
-                                echo '<h5 class="mb-1">' . htmlspecialchars($row['car_type']) . '</h5>';
-                                echo '<span class="badge ' . $status_class . '">' . ucfirst($row['status']) . '</span>';
                                 echo '</div>';
-                                echo '<p class="mb-1">From: ' . date('M d, Y', strtotime($row['start_date'])) . ' - To: ' . date('M d, Y', strtotime($row['end_date'])) . '</p>';
-                                echo '</a>';
                             }
-                            echo '</div>';
                         }
+                    } catch (Exception $e) {
+                        // If there's an error, we'll just show no reservations
+                        $has_reservations = false;
                     }
                     
                     if (!$has_reservations) {
