@@ -72,7 +72,7 @@ require_once __DIR__ . '/backend/db_connect.php';
 									</a>
 								</li>
 								<li>
-									<a href="user_settings.php">
+									<a href="admin_settings.php">
 										<img src="assets/img/icons/settings-icon.svg" alt="Icon">
 										<span>Settings</span>
 									</a>

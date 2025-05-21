@@ -60,38 +60,46 @@ if ($result->num_rows > 0) {
   <style>
     .settings-menu {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
     }
     .settings-menu .nav-link {
-      color: #666;
-      padding: 12px 20px;
+      color: #555;
+      padding: 14px 20px;
       border-radius: 0;
-      border-left: 3px solid transparent;
+      border-left: 4px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .settings-menu .nav-link:hover {
+      background: rgba(0,0,0,0.02);
+      color: #ff6e40;
     }
     .settings-menu .nav-link.active {
-      background: rgba(0,0,0,0.03);
+      background: rgba(255,110,64,0.08);
       color: #ff6e40;
-      border-left: 3px solid #ff6e40;
+      border-left: 4px solid #ff6e40;
+      font-weight: 500;
     }
     .settings-menu .nav-link i {
-      margin-right: 10px;
+      margin-right: 12px;
       width: 20px;
       text-align: center;
     }
     .settings-card {
       border: none;
-      box-shadow: 0 0 15px rgba(0,0,0,0.05);
-      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border-radius: 12px;
       margin-bottom: 25px;
+      overflow: hidden;
     }
     .settings-card .card-header {
       background: #fff;
       border-bottom: 1px solid #f0f0f0;
-      padding: 15px 20px;
+      padding: 18px 24px;
     }
     .settings-card .card-body {
-      padding: 20px;
+      padding: 24px;
     }
     .profile-upload {
       position: relative;
@@ -103,12 +111,13 @@ if ($result->num_rows > 0) {
       height: 150px;
       object-fit: cover;
       border-radius: 50%;
-      border: 3px solid #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border: 4px solid #fff;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
     }
     .profile-upload .upload-btn {
       position: absolute;
-      right: 0;
+      right: 5px;
       bottom: 10px;
       background: #ff6e40;
       color: #fff;
@@ -119,21 +128,48 @@ if ($result->num_rows > 0) {
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      box-shadow: 0 3px 8px rgba(255,110,64,0.4);
+      transition: all 0.3s ease;
+    }
+    .profile-upload .upload-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 12px rgba(255,110,64,0.5);
+    }
+    .form-control {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      transition: all 0.3s ease;
     }
     .form-control:focus {
       border-color: #ff6e40;
       box-shadow: 0 0 0 0.25rem rgba(255, 110, 64, 0.25);
     }
+    .form-select {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      transition: all 0.3s ease;
+    }
+    .form-select:focus {
+      border-color: #ff6e40;
+      box-shadow: 0 0 0 0.25rem rgba(255, 110, 64, 0.25);
+    }
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #444;
+    }
     .password-strength {
-      height: 5px;
-      margin-top: 5px;
-      border-radius: 5px;
+      height: 6px;
+      margin-top: 8px;
+      border-radius: 6px;
       background: #e9ecef;
+      overflow: hidden;
     }
     .password-strength-meter {
       height: 100%;
-      border-radius: 5px;
+      border-radius: 6px;
       transition: width 0.3s ease;
     }
     .strength-weak { width: 25%; background-color: #dc3545; }
@@ -141,17 +177,21 @@ if ($result->num_rows > 0) {
     .strength-good { width: 75%; background-color: #0dcaf0; }
     .strength-strong { width: 100%; background-color: #198754; }
     .activity-item {
-      padding: 10px 0;
+      padding: 15px 0;
       border-bottom: 1px solid #f0f0f0;
+      transition: all 0.2s ease;
+    }
+    .activity-item:hover {
+      background-color: rgba(0,0,0,0.01);
     }
     .activity-item:last-child {
       border-bottom: none;
     }
     .activity-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #f8f9fa;
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      background: rgba(255,110,64,0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -159,6 +199,7 @@ if ($result->num_rows > 0) {
     }
     .activity-icon i {
       color: #ff6e40;
+      font-size: 1.2rem;
     }
     .activity-content {
       flex: 1;
@@ -167,7 +208,55 @@ if ($result->num_rows > 0) {
       color: #6c757d;
       font-size: 12px;
     }
-  </style>
+    .btn-primary {
+      background-color: #ff6e40;
+      border-color: #ff6e40;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #ff5722;
+      border-color: #ff5722;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255,110,64,0.3);
+    }
+    .btn-outline-danger {
+      border-color: #dc3545;
+      color: #dc3545;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .btn-outline-danger:hover {
+      background-color: #dc3545;
+      color: #fff;
+      box-shadow: 0 5px 15px rgba(220,53,69,0.3);
+    }
+    .alert {
+      border-radius: 10px;
+      padding: 15px 20px;
+      border: none;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      color: #555;
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      color: #ff6e40;
+      transform: translateX(-3px);
+    }
+    .back-btn i {
+      margin-right: 8px;
+    }
+</style>
 </head>
 <body>
 <div class="main-wrapper">
@@ -192,6 +281,10 @@ if ($result->num_rows > 0) {
 
   <div class="content py-5">
     <div class="container">
+    <a href="user_dashboard.php" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    
       <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <i class="fas fa-check-circle me-2"></i> Profile updated successfully!
