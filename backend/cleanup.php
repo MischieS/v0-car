@@ -25,6 +25,7 @@ echo "<!DOCTYPE html>
         .file-list { max-height: 400px; overflow-y: auto; }
         .deleted { text-decoration: line-through; color: #dc3545; }
         .kept { color: #198754; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -42,115 +43,127 @@ function logMessage($message, $type = 'info') {
     echo "<div class='$class'>$message</div>";
 }
 
-// Get the actual directory structure
+// Get current directory information
 echo "<div class='card mb-4'>
         <div class='card-header bg-primary text-white'>
-            <h3 class='card-title mb-0'>Directory Structure Analysis</h3>
+            <h3 class='card-title mb-0'>Current Directory Information</h3>
         </div>
         <div class='card-body'>";
 
-// Function to scan directory and get structure
-function scanDirectory($dir, $depth = 0, $maxDepth = 2) {
-    if ($depth > $maxDepth) return [];
-    
-    $result = [];
-    if (is_dir($dir)) {
-        $files = scandir($dir);
-        foreach ($files as $file) {
-            if ($file != '.' && $file != '..') {
-                $path = $dir . '/' . $file;
-                if (is_dir($path)) {
-                    $result[$file] = scanDirectory($path, $depth + 1, $maxDepth);
-                } else {
-                    $result[] = $file;
-                }
-            }
-        }
-    }
-    return $result;
-}
+echo "<p><strong>Current working directory:</strong> " . getcwd() . "</p>";
+echo "<p><strong>Script location:</strong> " . __FILE__ . "</p>";
+echo "<p><strong>Document root:</strong> " . $_SERVER['DOCUMENT_ROOT'] . "</p>";
 
-// Get the root directories
-$rootDirs = [];
-$files = scandir('.');
-foreach ($files as $file) {
-    if ($file != '.' && $file != '..' && is_dir($file)) {
-        $rootDirs[] = $file;
-    }
-}
-
-echo "<p>Found the following root directories:</p><ul>";
-foreach ($rootDirs as $dir) {
-    echo "<li><strong>$dir</strong></li>";
+// List all directories in the current directory
+echo "<p><strong>Directories in current location:</strong></p><ul>";
+$dirs = glob('*', GLOB_ONLYDIR);
+foreach ($dirs as $dir) {
+    echo "<li>" . htmlspecialchars($dir) . "</li>";
 }
 echo "</ul>";
 
-// Check if backend directory exists
-if (in_array('backend', $rootDirs)) {
-    echo "<p class='text-success'>Backend directory found.</p>";
+// List all PHP files in the current directory
+echo "<p><strong>PHP files in current location:</strong></p><ul>";
+$phpFiles = glob('*.php');
+foreach ($phpFiles as $file) {
+    echo "<li>" . htmlspecialchars($file) . "</li>";
+}
+echo "</ul>";
+
+// Check if we're in the backend directory
+$inBackendDir = (basename(getcwd()) === 'backend');
+echo "<p><strong>Are we in the backend directory?</strong> " . ($inBackendDir ? 'Yes' : 'No') . "</p>";
+
+// If we're in the backend directory, we need to look for parent directories
+if ($inBackendDir) {
+    echo "<p>Since we're in the backend directory, let's check the parent directory:</p>";
+    $parentDir = dirname(getcwd());
+    echo "<p><strong>Parent directory:</strong> " . $parentDir . "</p>";
     
-    // List files in backend directory
-    $backendFiles = scandir('backend');
-    echo "<p>Files in backend directory:</p><ul>";
-    foreach ($backendFiles as $file) {
-        if ($file != '.' && $file != '..' && is_file('backend/' . $file)) {
-            echo "<li>$file</li>";
-        }
+    echo "<p><strong>Directories in parent location:</strong></p><ul>";
+    $parentDirs = glob($parentDir . '/*', GLOB_ONLYDIR);
+    foreach ($parentDirs as $dir) {
+        echo "<li>" . htmlspecialchars(basename($dir)) . "</li>";
     }
     echo "</ul>";
-} else {
-    echo "<p class='text-danger'>Backend directory not found! This is a critical issue.</p>";
-}
-
-// Check if assets directory exists
-if (in_array('assets', $rootDirs)) {
-    echo "<p class='text-success'>Assets directory found.</p>";
-    
-    // Check for image directory
-    $assetsDirs = scandir('assets');
-    $imgDirFound = false;
-    foreach ($assetsDirs as $dir) {
-        if ($dir == 'img') {
-            $imgDirFound = true;
-            break;
-        }
-    }
-    
-    if ($imgDirFound) {
-        echo "<p class='text-success'>Images directory found at assets/img.</p>";
-    } else {
-        echo "<p class='text-warning'>Images directory not found at assets/img. Checking for alternative locations...</p>";
-        
-        // Try to find any image directories
-        $imageDirs = [];
-        foreach ($assetsDirs as $dir) {
-            if ($dir != '.' && $dir != '..' && is_dir('assets/' . $dir)) {
-                $subDirs = scandir('assets/' . $dir);
-                foreach ($subDirs as $subDir) {
-                    if (in_array(strtolower($subDir), ['images', 'img', 'pics', 'photos'])) {
-                        $imageDirs[] = 'assets/' . $dir . '/' . $subDir;
-                    }
-                }
-            }
-        }
-        
-        if (count($imageDirs) > 0) {
-            echo "<p>Found potential image directories:</p><ul>";
-            foreach ($imageDirs as $dir) {
-                echo "<li>$dir</li>";
-            }
-            echo "</ul>";
-        } else {
-            echo "<p class='text-danger'>No image directories found in assets.</p>";
-        }
-    }
-} else {
-    echo "<p class='text-danger'>Assets directory not found!</p>";
 }
 
 echo "</div></div>";
 
-// List of files to check for cleanup
+// Function to find directories case-insensitively
+function findDirectoryCaseInsensitive($name, $basePath = '.') {
+    $dirs = glob($basePath . '/*', GLOB_ONLYDIR);
+    foreach ($dirs as $dir) {
+        if (strtolower(basename($dir)) === strtolower($name)) {
+            return $dir;
+        }
+    }
+    return false;
+}
+
+// Find backend and assets directories
+echo "<div class='card mb-4'>
+        <div class='card-header bg-info text-white'>
+            <h3 class='card-title mb-0'>Directory Search</h3>
+        </div>
+        <div class='card-body'>";
+
+// Determine the base path
+$basePath = $inBackendDir ? '..' : '.';
+
+// Look for backend directory
+$backendDir = findDirectoryCaseInsensitive('backend', $basePath);
+if ($backendDir) {
+    echo "<p class='text-success'><strong>Backend directory found:</strong> " . $backendDir . "</p>";
+    
+    // List files in backend directory
+    echo "<p><strong>Files in backend directory:</strong></p><ul>";
+    $backendFiles = glob($backendDir . '/*.php');
+    foreach ($backendFiles as $file) {
+        echo "<li>" . htmlspecialchars(basename($file)) . "</li>";
+    }
+    echo "</ul>";
+} else {
+    echo "<p class='text-danger'><strong>Backend directory not found!</strong> Searched in: " . $basePath . "</p>";
+}
+
+// Look for assets directory
+$assetsDir = findDirectoryCaseInsensitive('assets', $basePath);
+if ($assetsDir) {
+    echo "<p class='text-success'><strong>Assets directory found:</strong> " . $assetsDir . "</p>";
+    
+    // List subdirectories in assets
+    echo "<p><strong>Subdirectories in assets:</strong></p><ul>";
+    $assetSubdirs = glob($assetsDir . '/*', GLOB_ONLYDIR);
+    foreach ($assetSubdirs as $dir) {
+        echo "<li>" . htmlspecialchars(basename($dir)) . "</li>";
+    }
+    echo "</ul>";
+    
+    // Look for image directory
+    $imgDir = findDirectoryCaseInsensitive('img', $assetsDir);
+    if ($imgDir) {
+        echo "<p class='text-success'><strong>Images directory found:</strong> " . $imgDir . "</p>";
+    } else {
+        echo "<p class='text-warning'><strong>Images directory not found in assets.</strong> Looking for alternatives...</p>";
+        
+        // Check for other possible image directories
+        $possibleImgDirs = ['images', 'pics', 'photos', 'graphics'];
+        foreach ($possibleImgDirs as $dirName) {
+            $dir = findDirectoryCaseInsensitive($dirName, $assetsDir);
+            if ($dir) {
+                echo "<p class='text-success'><strong>Alternative images directory found:</strong> " . $dir . "</p>";
+                break;
+            }
+        }
+    }
+} else {
+    echo "<p class='text-danger'><strong>Assets directory not found!</strong> Searched in: " . $basePath . "</p>";
+}
+
+echo "</div></div>";
+
+// Check for temporary files
 echo "<div class='card mb-4'>
         <div class='card-header bg-warning text-dark'>
             <h3 class='card-title mb-0'>Temporary Files Check</h3>
@@ -174,6 +187,10 @@ $tempFilePatterns = [
 function findFiles($patterns, $directory = '.') {
     $matches = [];
     
+    if (!is_dir($directory)) {
+        return $matches;
+    }
+    
     foreach ($patterns as $pattern) {
         $files = glob($directory . '/' . $pattern);
         if ($files) {
@@ -193,236 +210,150 @@ function findFiles($patterns, $directory = '.') {
     return $matches;
 }
 
-$tempFiles = findFiles($tempFilePatterns);
+// Determine the search path
+$searchPath = $inBackendDir ? '..' : '.';
+$tempFiles = findFiles($tempFilePatterns, $searchPath);
 
 if (count($tempFiles) > 0) {
     echo "<p>Found the following temporary files that can be safely removed:</p><ul>";
     foreach ($tempFiles as $file) {
-        echo "<li>$file</li>";
+        echo "<li>" . htmlspecialchars($file) . "</li>";
     }
     echo "</ul>";
+    
+    echo "<form method='post'>
+            <input type='hidden' name='delete_temp_files' value='yes'>
+            <button type='submit' class='btn btn-warning'>Remove Temporary Files</button>
+          </form>";
+    
+    if (isset($_POST['delete_temp_files']) && $_POST['delete_temp_files'] === 'yes') {
+        echo "<p>Removing temporary files:</p><ul>";
+        foreach ($tempFiles as $file) {
+            if (unlink($file)) {
+                echo "<li class='text-success'>" . htmlspecialchars($file) . " - Removed</li>";
+            } else {
+                echo "<li class='text-danger'>" . htmlspecialchars($file) . " - Failed to remove</li>";
+            }
+        }
+        echo "</ul>";
+    }
 } else {
     echo "<p class='text-success'>No temporary files found.</p>";
 }
 
 echo "</div></div>";
 
-// Check for empty directories
-echo "<div class='card mb-4'>
-        <div class='card-header bg-info text-white'>
-            <h3 class='card-title mb-0'>Empty Directories Check</h3>
-        </div>
-        <div class='card-body file-list'>";
-
-function checkEmptyDirectories($path) {
-    $empty = [];
-    
-    if (!is_dir($path)) {
-        return $empty;
-    }
-    
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::CHILD_FIRST
-    );
-    
-    foreach ($iterator as $dir) {
-        if ($dir->isDir()) {
-            $isDirEmpty = !(new \FilesystemIterator($dir->getPathname()))->valid();
-            if ($isDirEmpty) {
-                $empty[] = $dir->getPathname();
-            }
-        }
-    }
-    
-    return $empty;
-}
-
-$emptyDirs = [];
-foreach ($rootDirs as $dir) {
-    $emptyDirs = array_merge($emptyDirs, checkEmptyDirectories($dir));
-}
-
-if (count($emptyDirs) > 0) {
-    echo "<p>The following directories are empty:</p><ul>";
-    foreach ($emptyDirs as $dir) {
-        echo "<li>$dir</li>";
-    }
-    echo "</ul>";
-    
-    echo "<form method='post'>
-            <input type='hidden' name='delete_empty_dirs' value='yes'>
-            <button type='submit' class='btn btn-warning'>Remove Empty Directories</button>
-          </form>";
-    
-    if (isset($_POST['delete_empty_dirs']) && $_POST['delete_empty_dirs'] === 'yes') {
-        echo "<p>Removing empty directories:</p><ul>";
-        foreach ($emptyDirs as $dir) {
-            if (rmdir($dir)) {
-                echo "<li class='text-success'>$dir - Removed</li>";
-            } else {
-                echo "<li class='text-danger'>$dir - Failed to remove</li>";
-            }
-        }
-        echo "</ul>";
-    }
-} else {
-    echo "<p>No empty directories found.</p>";
-}
-
-echo "</div></div>";
-
-// Check for large files
-echo "<div class='card mb-4'>
-        <div class='card-header bg-secondary text-white'>
-            <h3 class='card-title mb-0'>Large Files Check</h3>
-        </div>
-        <div class='card-body file-list'>";
-
-function findLargeFiles($minSize = 1000000) { // 1MB
-    $largeFiles = [];
-    
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator('.', RecursiveDirectoryIterator::SKIP_DOTS)
-    );
-    
-    foreach ($iterator as $file) {
-        if ($file->isFile() && $file->getSize() > $minSize) {
-            $largeFiles[] = [
-                'path' => $file->getPathname(),
-                'size' => $file->getSize()
-            ];
-        }
-    }
-    
-    // Sort by size (largest first)
-    usort($largeFiles, function($a, $b) {
-        return $b['size'] - $a['size'];
-    });
-    
-    return $largeFiles;
-}
-
-function formatSize($bytes) {
-    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    $i = 0;
-    while ($bytes >= 1024 && $i < count($units) - 1) {
-        $bytes /= 1024;
-        $i++;
-    }
-    return round($bytes, 2) . ' ' . $units[$i];
-}
-
-$largeFiles = findLargeFiles();
-
-if (count($largeFiles) > 0) {
-    echo "<p>Found the following large files (over 1MB):</p>
-          <table class='table table-striped'>
-            <thead>
-              <tr>
-                <th>File</th>
-                <th>Size</th>
-              </tr>
-            </thead>
-            <tbody>";
-    
-    foreach ($largeFiles as $file) {
-        echo "<tr>
-                <td>{$file['path']}</td>
-                <td>" . formatSize($file['size']) . "</td>
-              </tr>";
-    }
-    
-    echo "</tbody></table>";
-} else {
-    echo "<p>No large files found.</p>";
-}
-
-echo "</div></div>";
-
-// Code optimization suggestions
-echo "<div class='card mb-4'>
-        <div class='card-header bg-success text-white'>
-            <h3 class='card-title mb-0'>Code Optimization Suggestions</h3>
-        </div>
-        <div class='card-body'>";
-
-echo "<h4>1. Combine CSS and JavaScript Files</h4>
-      <p>Consider combining and minifying your CSS and JavaScript files to reduce HTTP requests and improve page load times.</p>
-      
-      <h4>2. Optimize Images</h4>
-      <p>Use image compression tools to reduce the file size of your images without sacrificing quality.</p>
-      
-      <h4>3. Implement Caching</h4>
-      <p>Add proper caching headers to your static assets to improve load times for returning visitors.</p>
-      
-      <h4>4. Use a CDN for Libraries</h4>
-      <p>Consider using CDNs for common libraries like Bootstrap, jQuery, and Font Awesome instead of hosting them yourself.</p>
-      
-      <h4>5. Remove Unused Code</h4>
-      <p>Identify and remove any unused CSS, JavaScript, or PHP code to reduce file sizes and improve maintainability.</p>";
-
-echo "</div></div>";
-
-// Project summary
+// Project structure visualization
 echo "<div class='card mb-4'>
         <div class='card-header bg-dark text-white'>
-            <h3 class='card-title mb-0'>Project Summary</h3>
+            <h3 class='card-title mb-0'>Project Structure</h3>
         </div>
         <div class='card-body'>";
 
-// Count files by type
-function countFilesByType() {
-    $counts = [
-        'php' => 0,
-        'js' => 0,
-        'css' => 0,
-        'html' => 0,
-        'images' => 0,
-        'other' => 0
-    ];
+// Function to generate a simple directory tree
+function generateDirectoryTree($dir, $depth = 0, $maxDepth = 3) {
+    if ($depth > $maxDepth) return '';
     
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico'];
-    
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator('.', RecursiveDirectoryIterator::SKIP_DOTS)
-    );
-    
-    foreach ($iterator as $file) {
-        if ($file->isFile()) {
-            $extension = strtolower(pathinfo($file->getPathname(), PATHINFO_EXTENSION));
-            
-            if ($extension === 'php') {
-                $counts['php']++;
-            } elseif ($extension === 'js') {
-                $counts['js']++;
-            } elseif ($extension === 'css') {
-                $counts['css']++;
-            } elseif ($extension === 'html' || $extension === 'htm') {
-                $counts['html']++;
-            } elseif (in_array($extension, $imageExtensions)) {
-                $counts['images']++;
-            } else {
-                $counts['other']++;
+    $output = '';
+    if (is_dir($dir)) {
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if ($file != '.' && $file != '..') {
+                $path = $dir . '/' . $file;
+                $indent = str_repeat('│   ', $depth);
+                
+                if (is_dir($path)) {
+                    $output .= $indent . "├── 📁 " . $file . "\n";
+                    $output .= generateDirectoryTree($path, $depth + 1, $maxDepth);
+                } else {
+                    $output .= $indent . "├── 📄 " . $file . "\n";
+                }
             }
         }
     }
-    
-    return $counts;
+    return $output;
 }
 
-$fileCounts = countFilesByType();
+// Generate tree for the main directory
+$treeRoot = $inBackendDir ? '..' : '.';
+$tree = generateDirectoryTree($treeRoot, 0, 2); // Limit depth to 2 levels
 
-echo "<h4>File Statistics</h4>
+echo "<p>Here's a simplified view of your project structure (limited to 2 levels deep):</p>";
+echo "<pre>" . htmlspecialchars($tree) . "</pre>";
+
+echo "<p class='text-muted'>Note: This is a simplified view. Some directories may be truncated due to depth limitations.</p>";
+
+echo "</div></div>";
+
+// Cleanup recommendations
+echo "<div class='card mb-4'>
+        <div class='card-header bg-success text-white'>
+            <h3 class='card-title mb-0'>Cleanup Recommendations</h3>
+        </div>
+        <div class='card-body'>";
+
+echo "<h4>1. Organize Your Files</h4>
+      <p>Consider organizing your files into a more structured directory layout:</p>
       <ul>
-        <li><strong>PHP Files:</strong> {$fileCounts['php']}</li>
-        <li><strong>JavaScript Files:</strong> {$fileCounts['js']}</li>
-        <li><strong>CSS Files:</strong> {$fileCounts['css']}</li>
-        <li><strong>HTML Files:</strong> {$fileCounts['html']}</li>
-        <li><strong>Image Files:</strong> {$fileCounts['images']}</li>
-        <li><strong>Other Files:</strong> {$fileCounts['other']}</li>
-        <li><strong>Total Files:</strong> " . array_sum($fileCounts) . "</li>
-      </ul>";
+        <li><strong>app/</strong> - Core application files</li>
+        <li><strong>public/</strong> - Publicly accessible files</li>
+        <li><strong>resources/</strong> - Non-PHP resources (templates, etc.)</li>
+        <li><strong>config/</strong> - Configuration files</li>
+        <li><strong>vendor/</strong> - Third-party dependencies</li>
+      </ul>
+      
+      <h4>2. Use Composer for Dependencies</h4>
+      <p>Consider using Composer to manage your PHP dependencies instead of including them manually.</p>
+      
+      <h4>3. Implement a Router</h4>
+      <p>Replace direct access to PHP files with a front controller pattern and router.</p>
+      
+      <h4>4. Separate Logic from Presentation</h4>
+      <p>Move business logic out of your presentation files into separate classes.</p>
+      
+      <h4>5. Use Environment Variables</h4>
+      <p>Store configuration in environment variables instead of hardcoding them in your PHP files.</p>";
+
+echo "</div></div>";
+
+// Final summary
+echo "<div class='card mb-4'>
+        <div class='card-header bg-primary text-white'>
+            <h3 class='card-title mb-0'>Summary</h3>
+        </div>
+        <div class='card-body'>";
+
+echo "<p>This script has analyzed your project structure and provided recommendations for cleanup and organization.</p>
+      <p>Key findings:</p>
+      <ul>";
+
+if ($backendDir) {
+    echo "<li class='text-success'>Backend directory found at: " . htmlspecialchars($backendDir) . "</li>";
+} else {
+    echo "<li class='text-danger'>Backend directory not found</li>";
+}
+
+if ($assetsDir) {
+    echo "<li class='text-success'>Assets directory found at: " . htmlspecialchars($assetsDir) . "</li>";
+} else {
+    echo "<li class='text-danger'>Assets directory not found</li>";
+}
+
+if (count($tempFiles) > 0) {
+    echo "<li class='text-warning'>" . count($tempFiles) . " temporary files found that could be removed</li>";
+} else {
+    echo "<li class='text-success'>No temporary files found</li>";
+}
+
+echo "</ul>";
+
+echo "<p>Next steps:</p>
+      <ol>
+        <li>Review the project structure visualization to understand your codebase better</li>
+        <li>Consider implementing the cleanup recommendations</li>
+        <li>Remove any temporary files if needed</li>
+        <li>Consider reorganizing your project structure for better maintainability</li>
+      </ol>";
 
 echo "</div></div>";
 
