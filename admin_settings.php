@@ -2,6 +2,16 @@
 session_start();
 require_once __DIR__ . '/backend/db_connect.php';
 
+// Check if user is logged in and is admin
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
+// Get admin information
+$admin_name = $_SESSION['user_name'];
+$admin_email = $_SESSION['user_email'];
+
 // Check admin access
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     header('Location: login.php');
@@ -227,9 +237,128 @@ function getSetting($settings, $group, $name, $default = '') {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Admin Settings - Car Rental System</title>
-    <?php include('assets/includes/header_link.php'); ?>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>Admin Settings - Car Rental</title>
+    <?php include('assets/includes/header_link.php') ?>
     <style>
+        .sidebar {
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 70px);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            color: #555;
+            transition: all 0.3s;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: #e7eeff;
+            color: #4070f4;
+            text-decoration: none;
+        }
+        .sidebar-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        .settings-header {
+            background-color: #222;
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        .back-btn {
+            color: #fff;
+            background-color: rgba(255,255,255,0.1);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .back-btn:hover {
+            background-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .back-btn i {
+            margin-right: 5px;
+        }
+        .settings-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .settings-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+        }
+        .settings-tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .settings-tab.active {
+            border-bottom: 2px solid #4070f4;
+            color: #4070f4;
+        }
+        .settings-tab:hover:not(.active) {
+            background-color: #f8f9fa;
+        }
+        .settings-content {
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .profile-section {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .profile-name {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .profile-email {
+            color: #777;
+            font-size: 14px;
+        }
+        .logout-btn {
+            color: #ff5252;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #ffeeee;
+            color: #ff5252;
+        }
+        .activity-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+        .activity-item:hover {
+            background-color: #f8f9fa;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-time {
+            color: #777;
+            font-size: 12px;
+        }
         .nav-tabs .nav-link {
             border: none;
             color: #555;
@@ -368,747 +497,308 @@ function getSetting($settings, $group, $name, $default = '') {
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <?php include('assets/includes/header.php'); ?>
-
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-bar">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-12 col-12">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <a href="admin_dashboard.php" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-                            </a>
-                        </div>
-                        <h2 class="breadcrumb-title">Admin Settings</h2>
-                        <nav aria-label="breadcrumb" class="page-breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                                <li class="breadcrumb-item"><a href="admin_dashboard.php">Admin</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Settings</li>
-                            </ol>
-                        </nav>
-                    </div>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">
+                <img src="assets/img/logo.png" alt="Car Rental" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="booking_list.php">Cars</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about_us.php">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="faq.php">FAQ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact_us.php">Contact Us</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <a class="btn btn-outline-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Admin User
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="admin_dashboard.php">Dashboard</a></li>
+                        <li><a class="dropdown-item" href="admin_settings.php">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="backend/logout.php">Logout</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <!-- /Breadcrumb -->
+    </nav>
 
-        <!-- Dashboard Menu -->
-        <div class="dashboard-section">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-12">
-                        <div class="dashboard-menu">
-                            <ul class="nav justify-content-center">
-                                <li>
-                                    <a href="admin_dashboard.php">
-                                        <img src="assets/img/icons/dashboard-icon.svg" alt="Icon">
-                                        <span>Dashboard</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin_bookings.php">
-                                        <img src="assets/img/icons/booking-icon.svg" alt="Icon">
-                                        <span>Bookings</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin_cars.php">
-                                        <img src="assets/img/icons/car-rental-icon.svg" alt="Icon">
-                                        <span>Cars</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin_users.php">
-                                        <img src="assets/img/icons/profile-icon.svg" alt="Icon">
-                                        <span>Users</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin_settings.php" class="active">
-                                        <img src="assets/img/icons/settings-icon.svg" alt="Icon">
-                                        <span>Settings</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Settings Header -->
+    <div class="settings-header">
+        <div class="container">
+            <a href="admin_dashboard.php" class="back-btn mb-3">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1>Admin Settings</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="index.php" class="text-white-50">Home</a></li>
+                    <li class="breadcrumb-item"><a href="admin_dashboard.php" class="text-white-50">Admin</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Settings</li>
+                </ol>
+            </nav>
         </div>
-        <!-- /Dashboard Menu -->
-
-        <div class="content dashboard-content">
-            <div class="container">
-                <?php if (!empty($success_message)): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert" id="success-alert">
-                    <i class="fas fa-check-circle me-2"></i> <?= htmlspecialchars($success_message) ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <?php endif; ?>
-
-                <?php if (!empty($error_message)): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error-alert">
-                    <i class="fas fa-exclamation-circle me-2"></i> <?= htmlspecialchars($error_message) ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <?php endif; ?>
-
-                <?php if (!$settingsTableExists || !$activityTableExists || !$sessionsTableExists): ?>
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i> Some required database tables are missing. Please run the <a href="backend/db_setup_additional.php" class="alert-link">database setup script</a> to create them.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <?php endif; ?>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active d-flex align-items-center" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
-                                    <i class="fas fa-user me-2"></i>Profile
-                                </button>
-                            </li>
-                            <?php if ($settingsTableExists): ?>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">
-                                    <i class="fas fa-cog me-2"></i>General
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">
-                                    <i class="fas fa-envelope me-2"></i>Contact
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking" type="button" role="tab" aria-controls="booking" aria-selected="false">
-                                    <i class="fas fa-calendar-alt me-2"></i>Booking
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">
-                                    <i class="fas fa-credit-card me-2"></i>Payment
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="social-tab" data-bs-toggle="tab" data-bs-target="#social" type="button" role="tab" aria-controls="social" aria-selected="false">
-                                    <i class="fas fa-share-alt me-2"></i>Social
-                                </button>
-                            </li>
-                            <?php endif; ?>
-                            <?php if ($sessionsTableExists): ?>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
-                                    <i class="fas fa-shield-alt me-2"></i>Security
-                                </button>
-                            </li>
-                            <?php endif; ?>
-                            <?php if ($activityTableExists): ?>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link d-flex align-items-center" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">
-                                    <i class="fas fa-history me-2"></i>Activity
-                                </button>
-                            </li>
-                            <?php endif; ?>
-                        </ul>
-
-                        <div class="tab-content" id="settingsTabsContent">
-                            <!-- Profile Tab -->
-                            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                <div class="row">
-                                    <!-- Admin Profile -->
-                                    <div class="col-lg-6">
-                                        <div class="card settings-card mb-4">
-                                            <div class="card-header">
-                                                <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Admin Profile</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="form_type" value="profile_update">
-                                                    
-                                                    <div class="row mb-3">
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">First Name</label>
-                                                            <input type="text" name="first_name" class="form-control" value="<?= htmlspecialchars($user['first_name'] ?? '') ?>">
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Last Name</label>
-                                                            <input type="text" name="last_name" class="form-control" value="<?= htmlspecialchars($user['last_name'] ?? '') ?>">
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Username</label>
-                                                        <input type="text" name="user_name" class="form-control" value="<?= htmlspecialchars($user['user_name'] ?? '') ?>">
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Email Address</label>
-                                                        <input type="email" name="user_email" class="form-control" value="<?= htmlspecialchars($user['user_email'] ?? '') ?>">
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Phone Number</label>
-                                                        <input type="text" name="phone_number" class="form-control" value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>">
-                                                    </div>
-                                                    
-                                                    <div class="d-grid">
-                                                        <button type="submit" class="btn btn-primary btn-lg">
-                                                            <i class="fas fa-save me-2"></i>Save Profile
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Change Password -->
-                                    <div class="col-lg-6">
-                                        <div class="card settings-card mb-4">
-                                            <div class="card-header">
-                                                <h5 class="mb-0"><i class="fas fa-key me-2"></i>Change Password</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <form method="post" action="" id="passwordForm">
-                                                    <input type="hidden" name="form_type" value="password_update">
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Current Password</label>
-                                                        <div class="input-group">
-                                                            <input type="password" name="current_password" id="current_password" class="form-control">
-                                                            <span class="input-group-text toggle-password" data-target="current_password">
-                                                                <i class="fas fa-eye"></i>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">New Password</label>
-                                                        <div class="input-group">
-                                                            <input type="password" name="new_password" id="new_password" class="form-control">
-                                                            <span class="input-group-text toggle-password" data-target="new_password">
-                                                                <i class="fas fa-eye"></i>
-                                                            </span>
-                                                        </div>
-                                                        <div class="password-strength-meter mt-2">
-                                                            <div id="password-strength-bar"></div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Confirm New Password</label>
-                                                        <div class="input-group">
-                                                            <input type="password" name="confirm_password" id="confirm_password" class="form-control">
-                                                            <span class="input-group-text toggle-password" data-target="confirm_password">
-                                                                <i class="fas fa-eye"></i>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Password Requirements:</label>
-                                                        <ul class="password-requirements list-unstyled">
-                                                            <li id="length-check"><i class="fas fa-times-circle me-2"></i>At least 8 characters</li>
-                                                            <li id="uppercase-check"><i class="fas fa-times-circle me-2"></i>At least one uppercase letter</li>
-                                                            <li id="number-check"><i class="fas fa-times-circle me-2"></i>At least one number</li>
-                                                            <li id="special-check"><i class="fas fa-times-circle me-2"></i>At least one special character</li>
-                                                            <li id="match-check"><i class="fas fa-times-circle me-2"></i>Passwords match</li>
-                                                        </ul>
-                                                    </div>
-                                                    
-                                                    <div class="d-grid">
-                                                        <button type="submit" class="btn btn-primary btn-lg" id="change-password-btn" disabled>
-                                                            <i class="fas fa-key me-2"></i>Change Password
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- General Settings Tab -->
-                            <?php if ($settingsTableExists): ?>
-                            <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>General Settings</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="post" action="">
-                                            <input type="hidden" name="form_type" value="site_settings">
-                                            <input type="hidden" name="setting_group" value="general">
-                                            
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Site Name</label>
-                                                    <input type="text" name="site_name" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'general', 'site_name', 'Car Rental System')) ?>">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Site Description</label>
-                                                    <input type="text" name="site_description" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'general', 'site_description', 'Rent your dream car today')) ?>">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <div class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox" name="maintenance_mode" id="maintenance_mode" <?= getSetting($site_settings, 'system', 'maintenance_mode') == '1' ? 'checked' : '' ?>>
-                                                    <label class="form-check-label" for="maintenance_mode">Maintenance Mode</label>
-                                                </div>
-                                                <small class="text-muted">When enabled, only administrators can access the site.</small>
-                                            </div>
-                                            
-                                            <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-save me-2"></i>Save General Settings
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Contact Settings Tab -->
-                            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Contact Information</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="post" action="">
-                                            <input type="hidden" name="form_type" value="site_settings">
-                                            <input type="hidden" name="setting_group" value="contact">
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Contact Email</label>
-                                                <input type="email" name="contact_email" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'contact', 'contact_email')) ?>">
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Contact Phone</label>
-                                                <input type="text" name="contact_phone" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'contact', 'contact_phone')) ?>">
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Address</label>
-                                                <textarea name="address" class="form-control" rows="3"><?= htmlspecialchars(getSetting($site_settings, 'contact', 'address')) ?></textarea>
-                                            </div>
-                                            
-                                            <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-save me-2"></i>Save Contact Information
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Booking Settings Tab -->
-                            <div class="tab-pane fade" id="booking" role="tabpanel" aria-labelledby="booking-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Booking Settings</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="post" action="">
-                                            <input type="hidden" name="form_type" value="site_settings">
-                                            <input type="hidden" name="setting_group" value="booking">
-                                            
-                                            <div class="mb-3">
-                                                <div class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox" name="enable_bookings" id="enable_bookings" <?= getSetting($site_settings, 'features', 'enable_bookings') == '1' ? 'checked' : '' ?>>
-                                                    <label class="form-check-label" for="enable_bookings">Enable Bookings</label>
-                                                </div>
-                                                <small class="text-muted">When disabled, users cannot make new bookings.</small>
-                                            </div>
-                                            
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Minimum Rental Days</label>
-                                                    <input type="number" name="min_rental_days" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'booking', 'min_rental_days', '1')) ?>" min="1">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Maximum Rental Days</label>
-                                                    <input type="number" name="max_rental_days" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'booking', 'max_rental_days', '30')) ?>" min="1">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-save me-2"></i>Save Booking Settings
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Payment Settings Tab -->
-                            <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment Settings</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="post" action="">
-                                            <input type="hidden" name="form_type" value="site_settings">
-                                            <input type="hidden" name="setting_group" value="payment">
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Currency Symbol</label>
-                                                <input type="text" name="currency_symbol" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'payment', 'currency_symbol', '$')) ?>">
-                                            </div>
-                                            
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Tax Rate (%)</label>
-                                                    <input type="number" name="tax_rate" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'payment', 'tax_rate', '10')) ?>" min="0" step="0.01">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Booking Fee</label>
-                                                    <input type="number" name="booking_fee" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'payment', 'booking_fee', '5')) ?>" min="0" step="0.01">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-save me-2"></i>Save Payment Settings
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Social Media Tab -->
-                            <div class="tab-pane fade" id="social" role="tabpanel" aria-labelledby="social-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Social Media Links</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="post" action="">
-                                            <input type="hidden" name="form_type" value="site_settings">
-                                            <input type="hidden" name="setting_group" value="social">
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Facebook URL</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text"><i class="fab fa-facebook-f"></i></span>
-                                                    <input type="url" name="facebook_url" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'social', 'facebook_url')) ?>">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Twitter URL</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text"><i class="fab fa-twitter"></i></span>
-                                                    <input type="url" name="twitter_url" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'social', 'twitter_url')) ?>">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Instagram URL</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text"><i class="fab fa-instagram"></i></span>
-                                                    <input type="url" name="instagram_url" class="form-control" value="<?= htmlspecialchars(getSetting($site_settings, 'social', 'instagram_url')) ?>">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="d-grid">
-                                                <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-save me-2"></i>Save Social Media Links
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <!-- Security Tab -->
-                            <?php if ($sessionsTableExists): ?>
-                            <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Active Sessions</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            These are all active user sessions across the system. You can terminate any session if suspicious activity is detected.
-                                        </div>
-                                        
-                                        <div class="table-responsive">
-                                            <table class="table table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>User</th>
-                                                        <th>IP Address</th>
-                                                        <th>Login Time</th>
-                                                        <th>Last Activity</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php if (empty($sessions)): ?>
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">No active sessions found.</td>
-                                                        </tr>
-                                                    <?php else: ?>
-                                                        <?php foreach ($sessions as $session): ?>
-                                                            <tr>
-                                                                <td>
-                                                                    <?= htmlspecialchars($session['user_name']) ?>
-                                                                    <?php if ($session['user_id'] == $user_id): ?>
-                                                                        <span class="badge bg-success ms-2">You</span>
-                                                                    <?php endif; ?>
-                                                                </td>
-                                                                <td><?= htmlspecialchars($session['ip_address']) ?></td>
-                                                                <td><?= formatDate($session['login_time']) ?></td>
-                                                                <td><?= formatDate($session['last_activity']) ?></td>
-                                                                <td>
-                                                                    <?php if ($session['user_id'] != $user_id): ?>
-                                                                        <button class="btn btn-sm btn-danger">
-                                                                            <i class="fas fa-times-circle me-1"></i>Terminate
-                                                                        </button>
-                                                                    <?php else: ?>
-                                                                        <span class="text-muted">Current Session</span>
-                                                                    <?php endif; ?>
-                                                                </td>
-                                                            </tr>
-                                                        <?php endforeach; ?>
-                                                    <?php endif; ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        
-                                        <div class="d-grid gap-2 mt-3">
-                                            <button class="btn btn-warning">
-                                                <i class="fas fa-sign-out-alt me-2"></i>Terminate All Other Sessions
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <!-- Activity Tab -->
-                            <?php if ($activityTableExists): ?>
-                            <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
-                                <div class="card settings-card mb-4">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>User Activity Log</h5>
-                                        <div>
-                                            <button class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-download me-1"></i>Export Log
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            This log shows recent user activities across the system. Use this to monitor for suspicious behavior.
-                                        </div>
-                                        
-                                        <div class="activity-log">
-                                            <?php if (empty($activities)): ?>
-                                                <div class="text-center py-4">
-                                                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
-                                                    <p>No activity has been recorded yet.</p>
-                                                </div>
-                                            <?php else: ?>
-                                                <?php foreach ($activities as $activity): ?>
-                                                    <div class="activity-item">
-                                                        <div class="d-flex justify-content-between">
-                                                            <strong><?= htmlspecialchars($activity['user_name']) ?></strong>
-                                                            <span class="activity-time"><?= formatDate($activity['created_at']) ?></span>
-                                                        </div>
-                                                        <div>
-                                                            <?php
-                                                            $icon = '';
-                                                            switch($activity['activity_type']) {
-                                                                case 'login': $icon = '<i class="fas fa-sign-in-alt text-success me-1"></i>'; break;
-                                                                case 'logout': $icon = '<i class="fas fa-sign-out-alt text-warning me-1"></i>'; break;
-                                                                case 'profile_update': $icon = '<i class="fas fa-user-edit text-primary me-1"></i>'; break;
-                                                                case 'password_change': $icon = '<i class="fas fa-key text-danger me-1"></i>'; break;
-                                                                case 'settings_update': $icon = '<i class="fas fa-cog text-info me-1"></i>'; break;
-                                                                default: $icon = '<i class="fas fa-info-circle text-secondary me-1"></i>'; break;
-                                                            }
-                                                            echo $icon . htmlspecialchars($activity['activity_description']);
-                                                            ?>
-                                                        </div>
-                                                        <small class="text-muted">IP: <?= htmlspecialchars($activity['ip_address'] ?? 'Unknown') ?></small>
-                                                    </div>
-                                                <?php endforeach; ?>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <?php include('assets/includes/footer.php'); ?>
     </div>
 
-    <?php include('assets/includes/footer_link.php'); ?>
-
+    <div class="container py-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="sidebar">
+                    <div class="profile-section">
+                        <div>Profile</div>
+                        <h5 class="profile-name">Admin User</h5>
+                        <div class="profile-email"><?php echo htmlspecialchars($admin_email); ?></div>
+                    </div>
+                    
+                    <a href="admin_dashboard.php" class="sidebar-link">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="admin_bookings.php" class="sidebar-link">
+                        <i class="fas fa-calendar-check"></i> My Bookings
+                    </a>
+                    <a href="admin_cars.php" class="sidebar-link">
+                        <i class="fas fa-car"></i> Cars
+                    </a>
+                    <a href="admin_users.php" class="sidebar-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                    <a href="admin_settings.php" class="sidebar-link active">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    
+                    <a href="backend/logout.php" class="sidebar-link logout-btn mt-5">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="settings-card">
+                    <div class="settings-tabs">
+                        <div class="settings-tab active" onclick="showTab('profile')">Profile</div>
+                        <div class="settings-tab" onclick="showTab('security')">Security</div>
+                        <div class="settings-tab" onclick="showTab('notifications')">Notifications</div>
+                        <div class="settings-tab" onclick="showTab('activity')">Activity</div>
+                    </div>
+                    
+                    <!-- Profile Tab -->
+                    <div id="profile-tab" class="settings-content">
+                        <h4 class="mb-4">Profile Information</h4>
+                        <form action="backend/update_user_profile.php" method="post">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" value="<?php echo htmlspecialchars($admin_name); ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($admin_email); ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" value="">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="address" class="form-label">Address</label>
+                                        <input type="text" class="form-control" id="address" name="address" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Security Tab -->
+                    <div id="security-tab" class="settings-content" style="display: none;">
+                        <h4 class="mb-4">Security Settings</h4>
+                        <form action="backend/update_password.php" method="post">
+                            <div class="form-group">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="current_password" name="current_password">
+                            </div>
+                            <div class="form-group">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3">Active Sessions</h5>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Current Session</h6>
+                                        <p class="text-muted mb-0 small">
+                                            <i class="fas fa-desktop me-1"></i> 
+                                            <?php echo htmlspecialchars($_SERVER['HTTP_USER_AGENT']); ?>
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" onclick="if(confirm('Are you sure you want to log out from all devices?')) window.location.href='backend/logout_all.php'">
+                            Log Out From All Devices
+                        </button>
+                    </div>
+                    
+                    <!-- Notifications Tab -->
+                    <div id="notifications-tab" class="settings-content" style="display: none;">
+                        <h4 class="mb-4">Notification Preferences</h4>
+                        <form action="backend/update_user_settings.php" method="post">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" checked>
+                                <label class="form-check-label" for="email_notifications">Email Notifications</label>
+                                <p class="text-muted small">Receive booking confirmations and updates via email</p>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications">
+                                <label class="form-check-label" for="sms_notifications">SMS Notifications</label>
+                                <p class="text-muted small">Receive booking confirmations and updates via SMS</p>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="marketing_emails" name="marketing_emails">
+                                <label class="form-check-label" for="marketing_emails">Marketing Emails</label>
+                                <p class="text-muted small">Receive promotional offers and newsletters</p>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Activity Tab -->
+                    <div id="activity-tab" class="settings-content" style="display: none;">
+                        <h4 class="mb-4">Recent Activity</h4>
+                        <?php
+                        // Fetch user activity if available
+                        $activity_query = "SELECT * FROM user_activity WHERE user_id = ? ORDER BY activity_time DESC LIMIT 10";
+                        $stmt = $conn->prepare($activity_query);
+                        
+                        if ($stmt) {
+                            $stmt->bind_param("i", $_SESSION['user_id']);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    echo '<div class="activity-item">';
+                                    echo '<div class="d-flex justify-content-between">';
+                                    echo '<div>' . htmlspecialchars($row['activity_description']) . '</div>';
+                                    echo '<div class="activity-time">' . date('M d, Y h:i A', strtotime($row['activity_time'])) . '</div>';
+                                    echo '</div>';
+                                    echo '</div>';
+                                }
+                            } else {
+                                echo '<p>No recent activity found.</p>';
+                            }
+                            $stmt->close();
+                        } else {
+                            echo '<div class="alert alert-warning">Activity tracking is not available.</div>';
+                        }
+                        ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.php" class="text-white-50">Home</a></li>
+                        <li><a href="booking_list.php" class="text-white-50">Booking</a></li>
+                        <li><a href="about_us.php" class="text-white-50">About Us</a></li>
+                        <li><a href="faq.php" class="text-white-50">FAQ</a></li>
+                        <li><a href="contact_us.php" class="text-white-50">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Account</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="login.php" class="text-white-50">Login</a></li>
+                        <li><a href="register.php" class="text-white-50">Register</a></li>
+                        <li><a href="#" class="text-white-50">Forgot Password</a></li>
+                        <li><a href="user_bookings.php" class="text-white-50">My Bookings</a></li>
+                        <li><a href="user_settings.php" class="text-white-50">Profile</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Legal</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white-50">Privacy Policy</a></li>
+                        <li><a href="#" class="text-white-50">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Contact Info</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><i class="fas fa-phone me-2"></i> +1 (888) 760 1940</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> support@example.com</li>
+                    </ul>
+                    <div class="input-group mt-3">
+                        <input type="email" class="form-control" placeholder="Enter You Email Here">
+                        <button class="btn btn-primary" type="button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <?php include('assets/includes/footer_link.php') ?>
+    
     <script>
-        // Auto-dismiss alerts after 5 seconds
-        setTimeout(function() {
-            document.querySelectorAll('.alert').forEach(function(alert) {
-                var bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
+    function showTab(tabName) {
+        // Hide all tabs
+        document.getElementById('profile-tab').style.display = 'none';
+        document.getElementById('security-tab').style.display = 'none';
+        document.getElementById('notifications-tab').style.display = 'none';
+        document.getElementById('activity-tab').style.display = 'none';
         
-        // Toggle password visibility
-        document.querySelectorAll('.toggle-password').forEach(function(toggle) {
-            toggle.addEventListener('click', function() {
-                const targetId = this.getAttribute('data-target');
-                const input = document.getElementById(targetId);
-                const icon = this.querySelector('i');
-                
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            });
-        });
+        // Remove active class from all tabs
+        const tabs = document.querySelectorAll('.settings-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
         
-        // Password strength meter
-        const newPassword = document.getElementById('new_password');
-        const confirmPassword = document.getElementById('confirm_password');
-        const strengthBar = document.getElementById('password-strength-bar');
-        const lengthCheck = document.getElementById('length-check');
-        const uppercaseCheck = document.getElementById('uppercase-check');
-        const numberCheck = document.getElementById('number-check');
-        const specialCheck = document.getElementById('special-check');
-        const matchCheck = document.getElementById('match-check');
-        const changePasswordBtn = document.getElementById('change-password-btn');
+        // Show selected tab
+        document.getElementById(tabName + '-tab').style.display = 'block';
         
-        function updatePasswordStrength() {
-            if (!newPassword) return;
-            
-            const password = newPassword.value;
-            let strength = 0;
-            let color = '';
-            
-            // Check length
-            const hasLength = password.length >= 8;
-            if (hasLength) {
-                strength += 25;
-                lengthCheck.classList.add('met');
-                lengthCheck.querySelector('i').classList.replace('fa-times-circle', 'fa-check-circle');
-            } else {
-                lengthCheck.classList.remove('met');
-                lengthCheck.querySelector('i').classList.replace('fa-check-circle', 'fa-times-circle');
-            }
-            
-            // Check uppercase
-            const hasUppercase = /[A-Z]/.test(password);
-            if (hasUppercase) {
-                strength += 25;
-                uppercaseCheck.classList.add('met');
-                uppercaseCheck.querySelector('i').classList.replace('fa-times-circle', 'fa-check-circle');
-            } else {
-                uppercaseCheck.classList.remove('met');
-                uppercaseCheck.querySelector('i').classList.replace('fa-check-circle', 'fa-times-circle');
-            }
-            
-            // Check number
-            const hasNumber = /[0-9]/.test(password);
-            if (hasNumber) {
-                strength += 25;
-                numberCheck.classList.add('met');
-                numberCheck.querySelector('i').classList.replace('fa-times-circle', 'fa-check-circle');
-            } else {
-                numberCheck.classList.remove('met');
-                numberCheck.querySelector('i').classList.replace('fa-check-circle', 'fa-times-circle');
-            }
-            
-            // Check special character
-            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-            if (hasSpecial) {
-                strength += 25;
-                specialCheck.classList.add('met');
-                specialCheck.querySelector('i').classList.replace('fa-times-circle', 'fa-check-circle');
-            } else {
-                specialCheck.classList.remove('met');
-                specialCheck.querySelector('i').classList.replace('fa-check-circle', 'fa-times-circle');
-            }
-            
-            // Set color based on strength
-            if (strength <= 25) {
-                color = '#dc3545'; // red
-            } else if (strength <= 50) {
-                color = '#ffc107'; // yellow
-            } else if (strength <= 75) {
-                color = '#fd7e14'; // orange
-            } else {
-                color = '#28a745'; // green
-            }
-            
-            // Update strength bar
-            strengthBar.style.width = strength + '%';
-            strengthBar.style.backgroundColor = color;
-            
-            // Check if passwords match
-            if (confirmPassword.value) {
-                if (newPassword.value === confirmPassword.value) {
-                    matchCheck.classList.add('met');
-                    matchCheck.querySelector('i').classList.replace('fa-times-circle', 'fa-check-circle');
-                } else {
-                    matchCheck.classList.remove('met');
-                    matchCheck.querySelector('i').classList.replace('fa-check-circle', 'fa-times-circle');
-                }
-            }
-            
-            // Enable/disable submit button
-            const currentPassword = document.getElementById('current_password').value;
-            const isValid = hasLength && hasUppercase && hasNumber && hasSpecial && 
-                           newPassword.value === confirmPassword.value && currentPassword;
-            
-            changePasswordBtn.disabled = !isValid;
-        }
-        
-        if (newPassword) {
-            newPassword.addEventListener('input', updatePasswordStrength);
-            confirmPassword.addEventListener('input', updatePasswordStrength);
-            document.getElementById('current_password').addEventListener('input', updatePasswordStrength);
-        }
-        
-        // Remember active tab
-        const triggerTabList = [].slice.call(document.querySelectorAll('#settingsTabs button'));
-        triggerTabList.forEach(function (triggerEl) {
-            triggerEl.addEventListener('click', function (event) {
-                localStorage.setItem('activeSettingsTab', event.target.id);
-            });
-        });
-        
-        // Restore active tab
-        const activeTab = localStorage.getItem('activeSettingsTab');
-        if (activeTab) {
-            const tab = document.querySelector('#' + activeTab);
-            if (tab) {
-                const bsTab = new bootstrap.Tab(tab);
-                bsTab.show();
-            }
-        }
+        // Add active class to clicked tab
+        event.currentTarget.classList.add('active');
+    }
     </script>
 </body>
 </html>
