@@ -520,7 +520,7 @@ if ($tableCheck->num_rows == 0) {
                 <div class="row">
                     <?php
                     // Get featured cars from database
-                    $sql = "SELECT * FROM cars WHERE featured = 1 LIMIT 6";
+                    $sql = "SELECT * FROM cars LIMIT 6";
                     $result = $conn->query($sql);
                     
                     if ($result && $result->num_rows > 0) {
