@@ -89,12 +89,8 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
            <?php if (isset($_SESSION["user_id"])): ?>
                <ul class="nav header-navbar-rht">
                    <li class="nav-item dropdown has-arrow logged-item">
-                       <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-                           <span class="user-img">
-                               <i class="fa-regular fa-user me-2"></i>
-                               <?= htmlspecialchars($_SESSION["user_name"]) ?>
-                               <i class="fas fa-chevron-down ms-2"></i>
-                           </span>
+                       <a href="#" class="dropdown-toggle nav-link user-dropdown" data-bs-toggle="dropdown">
+                           <?= htmlspecialchars($_SESSION["user_name"]) ?> <i class="fas fa-chevron-down ms-2"></i>
                        </a>
                        <div class="dropdown-menu dropdown-menu-end">
                            <?php if (isset($_SESSION["user_role"]) && $_SESSION["user_role"] === "admin"): ?>
@@ -140,3 +136,62 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
        </nav>
    </div>
 </header>
+
+<style>
+/* User dropdown styling to match the screenshot */
+.user-dropdown {
+    background-color: #4e73df;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 4px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-dropdown:hover, 
+.user-dropdown:focus {
+    background-color: #3a5ccc;
+    color: white !important;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu {
+    min-width: 200px;
+    padding: 0;
+    margin-top: 10px;
+    border: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    color: #4e73df;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #4e73df;
+}
+
+/* Fix for dropdown on mobile */
+@media (max-width: 991.98px) {
+    .header-navbar-rht {
+        margin-right: 50px;
+    }
+}
+</style>

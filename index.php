@@ -527,14 +527,36 @@ require_once 'backend/db_connect.php';
                     
                     if ($result && $result->num_rows > 0) {
                         while($car = $result->fetch_assoc()) {
+                            // Get car name - handle different database structures
+                            $carName = '';
+                            if (isset($car['car_type']) && !empty($car['car_type'])) {
+                                $carName = $car['car_type'];
+                            } elseif (isset($car['brand']) || isset($car['model'])) {
+                                $brand = isset($car['brand']) ? $car['brand'] : '';
+                                $model = isset($car['model']) ? $car['model'] : '';
+                                $carName = trim($brand . ' ' . $model);
+                            } else {
+                                $carName = 'Car #' . ($car['car_id'] ?? $car['id'] ?? 'Unknown');
+                            }
+                            
+                            // Get car image
+                            $carImage = 'assets/img/cars/default-car.jpg';
+                            if (isset($car['image']) && !empty($car['image'])) {
+                                $carImage = $car['image'];
+                            } elseif (isset($car['car_image']) && !empty($car['car_image'])) {
+                                $carImage = $car['car_image'];
+                            }
+                            
+                            // Get car ID for the link
+                            $carId = isset($car['car_id']) ? $car['car_id'] : (isset($car['id']) ? $car['id'] : 0);
                     ?>
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="car-card">
                             <div class="car-image">
-                                <img src="<?php echo htmlspecialchars($car['image'] ?? $car['car_image'] ?? 'assets/img/cars/default-car.jpg'); ?>" alt="<?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?>">
+                                <img src="<?php echo htmlspecialchars($carImage); ?>" alt="<?php echo htmlspecialchars($carName); ?>">
                             </div>
                             <div class="car-details">
-                                <h3 class="car-title"><?php echo htmlspecialchars($car['car_type'] ?? $car['brand'] . ' ' . $car['model']); ?></h3>
+                                <h3 class="car-title"><?php echo htmlspecialchars($carName); ?></h3>
                                 <div class="car-meta">
                                     <div class="car-meta-item">
                                         <i class="fas fa-car"></i> <?php echo htmlspecialchars($car['type'] ?? 'Sedan'); ?>
@@ -548,10 +570,10 @@ require_once 'backend/db_connect.php';
                                 </div>
                                 <div class="car-price">
                                     <div>
-                                        <span class="price-value">$<?php echo htmlspecialchars($car['price_per_day'] ?? $car['car_price_perday']); ?></span>
+                                        <span class="price-value">$<?php echo htmlspecialchars($car['price_per_day'] ?? $car['car_price_perday'] ?? '50'); ?></span>
                                         <span class="price-period">/ day</span>
                                     </div>
-                                    <a href="listing-details.php?id=<?php echo $car['car_id'] ?? $car['id']; ?>" class="btn-book">Book Now</a>
+                                    <a href="listing-details.php?id=<?php echo $carId; ?>" class="btn-book">Book Now</a>
                                 </div>
                             </div>
                         </div>
