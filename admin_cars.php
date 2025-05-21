@@ -9,9 +9,41 @@ require_once __DIR__ . '/backend/db_connect.php';
 if (!($conn instanceof mysqli)) die('Database connection failed.');
 
 function fetchSafe($conn, $sql) {
+    // Check if the table exists before running the query
+    $tableName = '';
+    if (preg_match('/FROM\s+`?(\w+)`?/i', $sql, $matches)) {
+        $tableName = $matches[1];
+    }
+    
+    if (!empty($tableName)) {
+        $tableExists = $conn->query("SHOW TABLES LIKE '$tableName'")->num_rows > 0;
+        if (!$tableExists) {
+            // Redirect to setup if table doesn't exist
+            header('Location: backend/setup_database.php');
+            exit;
+        }
+    }
+    
     $res = $conn->query($sql);
     if (!$res) die("SQL Error: " . $conn->error);
     return $res->fetch_all(MYSQLI_ASSOC);
+}
+
+// Check if required tables exist
+$requiredTables = ['car_brands', 'car_models', 'car_categories', 'fuel_types', 'gear_types', 'locations', 'cars'];
+$missingTables = [];
+
+foreach ($requiredTables as $table) {
+    $result = $conn->query("SHOW TABLES LIKE '$table'");
+    if ($result->num_rows == 0) {
+        $missingTables[] = $table;
+    }
+}
+
+if (!empty($missingTables)) {
+    // Redirect to setup if any required table is missing
+    header('Location: backend/setup_database.php');
+    exit;
 }
 
 $locations  = fetchSafe($conn, "SELECT location_id, location_name FROM locations ORDER BY location_name");

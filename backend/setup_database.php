@@ -82,6 +82,111 @@ if ($row['count'] == 0) {
         ('Istanbul Office'), ('Ankara Office'), ('Izmir Office')");
 }
 
+// CAR BRANDS TABLE
+$conn->query("CREATE TABLE IF NOT EXISTS car_brands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    brand_name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB");
+
+// Insert default car brands if table is empty
+$result = $conn->query("SELECT COUNT(*) as count FROM car_brands");
+$row = $result->fetch_assoc();
+if ($row['count'] == 0) {
+    $conn->query("INSERT INTO car_brands (brand_name) VALUES
+        ('Mercedes'), ('BMW'), ('Audi'), ('Toyota'), ('Honda'), ('Ford'), ('Volkswagen')");
+}
+
+// CAR MODELS TABLE
+$conn->query("CREATE TABLE IF NOT EXISTS car_models (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    brand_id INT NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (brand_id) REFERENCES car_brands(id) ON DELETE CASCADE
+) ENGINE=InnoDB");
+
+// Insert default car models if table is empty
+$result = $conn->query("SELECT COUNT(*) as count FROM car_models");
+$row = $result->fetch_assoc();
+if ($row['count'] == 0) {
+    // Get brand IDs
+    $brands = [];
+    $result = $conn->query("SELECT id, brand_name FROM car_brands");
+    while ($row = $result->fetch_assoc()) {
+        $brands[$row['brand_name']] = $row['id'];
+    }
+    
+    // Insert models for each brand
+    if (isset($brands['Mercedes'])) {
+        $conn->query("INSERT INTO car_models (brand_id, model_name) VALUES
+            ({$brands['Mercedes']}, 'E-Class'),
+            ({$brands['Mercedes']}, 'C-Class'),
+            ({$brands['Mercedes']}, 'S-Class')");
+    }
+    
+    if (isset($brands['BMW'])) {
+        $conn->query("INSERT INTO car_models (brand_id, model_name) VALUES
+            ({$brands['BMW']}, '3 Series'),
+            ({$brands['BMW']}, '5 Series'),
+            ({$brands['BMW']}, 'X5')");
+    }
+    
+    if (isset($brands['Audi'])) {
+        $conn->query("INSERT INTO car_models (brand_id, model_name) VALUES
+            ({$brands['Audi']}, 'A4'),
+            ({$brands['Audi']}, 'A6'),
+            ({$brands['Audi']}, 'Q7')");
+    }
+    
+    if (isset($brands['Toyota'])) {
+        $conn->query("INSERT INTO car_models (brand_id, model_name) VALUES
+            ({$brands['Toyota']}, 'Camry'),
+            ({$brands['Toyota']}, 'Corolla'),
+            ({$brands['Toyota']}, 'RAV4')");
+    }
+}
+
+// CAR CATEGORIES TABLE
+$conn->query("CREATE TABLE IF NOT EXISTS car_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB");
+
+// Insert default car categories if table is empty
+$result = $conn->query("SELECT COUNT(*) as count FROM car_categories");
+$row = $result->fetch_assoc();
+if ($row['count'] == 0) {
+    $conn->query("INSERT INTO car_categories (category_name) VALUES
+        ('Sedan'), ('SUV'), ('Hatchback'), ('Convertible'), ('Luxury')");
+}
+
+// FUEL TYPES TABLE
+$conn->query("CREATE TABLE IF NOT EXISTS fuel_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fuel_name VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB");
+
+// Insert default fuel types if table is empty
+$result = $conn->query("SELECT COUNT(*) as count FROM fuel_types");
+$row = $result->fetch_assoc();
+if ($row['count'] == 0) {
+    $conn->query("INSERT INTO fuel_types (fuel_name) VALUES
+        ('Petrol'), ('Diesel'), ('Hybrid'), ('Electric')");
+}
+
+// GEAR TYPES TABLE
+$conn->query("CREATE TABLE IF NOT EXISTS gear_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gear_name VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB");
+
+// Insert default gear types if table is empty
+$result = $conn->query("SELECT COUNT(*) as count FROM gear_types");
+$row = $result->fetch_assoc();
+if ($row['count'] == 0) {
+    $conn->query("INSERT INTO gear_types (gear_name) VALUES
+        ('Automatic'), ('Manual'), ('Semi-Automatic')");
+}
+
 // CARS TABLE
 $conn->query("CREATE TABLE IF NOT EXISTS cars (
     car_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,13 +200,17 @@ $conn->query("CREATE TABLE IF NOT EXISTS cars (
     transmission VARCHAR(20) DEFAULT 'Automatic',
     fuel_type VARCHAR(20) DEFAULT 'Petrol',
     passengers INT DEFAULT 5,
-    brand VARCHAR(50),
-    model VARCHAR(50),
-    type VARCHAR(50) DEFAULT 'Sedan',
-    image VARCHAR(255),
-    price_per_day DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT
+    brand_id INT,
+    model_id INT,
+    category_id INT,
+    fuel_type_id INT,
+    gear_type_id INT,
+    FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
+    FOREIGN KEY (brand_id) REFERENCES car_brands(id) ON DELETE SET NULL,
+    FOREIGN KEY (model_id) REFERENCES car_models(id) ON DELETE SET NULL,
+    FOREIGN KEY (category_id) REFERENCES car_categories(id) ON DELETE SET NULL,
+    FOREIGN KEY (fuel_type_id) REFERENCES fuel_types(id) ON DELETE SET NULL,
+    FOREIGN KEY (gear_type_id) REFERENCES gear_types(id) ON DELETE SET NULL
 ) ENGINE=InnoDB");
 
 // CAR IMAGES TABLE
@@ -174,6 +283,37 @@ if ($row['count'] == 0) {
         }
     }
     
+    // Get brand, model, category, fuel and gear IDs
+    $brands = [];
+    $result = $conn->query("SELECT id, brand_name FROM car_brands");
+    while ($row = $result->fetch_assoc()) {
+        $brands[$row['brand_name']] = $row['id'];
+    }
+    
+    $models = [];
+    $result = $conn->query("SELECT id, model_name, brand_id FROM car_models");
+    while ($row = $result->fetch_assoc()) {
+        $models[$row['model_name']] = $row['id'];
+    }
+    
+    $categories = [];
+    $result = $conn->query("SELECT id, category_name FROM car_categories");
+    while ($row = $result->fetch_assoc()) {
+        $categories[$row['category_name']] = $row['id'];
+    }
+    
+    $fuelTypes = [];
+    $result = $conn->query("SELECT id, fuel_name FROM fuel_types");
+    while ($row = $result->fetch_assoc()) {
+        $fuelTypes[$row['fuel_name']] = $row['id'];
+    }
+    
+    $gearTypes = [];
+    $result = $conn->query("SELECT id, gear_name FROM gear_types");
+    while ($row = $result->fetch_assoc()) {
+        $gearTypes[$row['gear_name']] = $row['id'];
+    }
+    
     // Sample cars data
     $sampleCars = [
         [
@@ -189,7 +329,9 @@ if ($row['count'] == 0) {
             'passengers' => 5,
             'brand' => 'Mercedes',
             'model' => 'E-Class',
-            'type' => 'Sedan'
+            'category' => 'Luxury',
+            'fuel' => 'Petrol',
+            'gear' => 'Automatic'
         ],
         [
             'car_type' => 'BMW 5 Series',
@@ -204,7 +346,9 @@ if ($row['count'] == 0) {
             'passengers' => 5,
             'brand' => 'BMW',
             'model' => '5 Series',
-            'type' => 'Sedan'
+            'category' => 'Sedan',
+            'fuel' => 'Petrol',
+            'gear' => 'Automatic'
         ],
         [
             'car_type' => 'Audi Q7',
@@ -219,24 +363,33 @@ if ($row['count'] == 0) {
             'passengers' => 7,
             'brand' => 'Audi',
             'model' => 'Q7',
-            'type' => 'SUV'
+            'category' => 'SUV',
+            'fuel' => 'Diesel',
+            'gear' => 'Automatic'
         ]
     ];
     
     foreach ($sampleCars as $car) {
+        $brandId = isset($brands[$car['brand']]) ? $brands[$car['brand']] : null;
+        $modelId = isset($models[$car['model']]) ? $models[$car['model']] : null;
+        $categoryId = isset($categories[$car['category']]) ? $categories[$car['category']] : null;
+        $fuelTypeId = isset($fuelTypes[$car['fuel']]) ? $fuelTypes[$car['fuel']] : null;
+        $gearTypeId = isset($gearTypes[$car['gear']]) ? $gearTypes[$car['gear']] : null;
+        
         $stmt = $conn->prepare("
             INSERT INTO cars (
                 car_type, car_price_perday, year, location_id, car_class, car_image,
-                featured, transmission, fuel_type, passengers, brand, model, type, image
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                featured, transmission, fuel_type, passengers, brand_id, model_id, 
+                category_id, fuel_type_id, gear_type_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
-        $image = $car['car_image'];
         $stmt->bind_param(
-            'sdiisisssissss',
+            'sdiisisssiiiiii',
             $car['car_type'], $car['car_price_perday'], $car['year'], $car['location_id'],
             $car['car_class'], $car['car_image'], $car['featured'], $car['transmission'],
-            $car['fuel_type'], $car['passengers'], $car['brand'], $car['model'], $car['type'], $image
+            $car['fuel_type'], $car['passengers'], $brandId, $modelId, 
+            $categoryId, $fuelTypeId, $gearTypeId
         );
         
         $stmt->execute();
