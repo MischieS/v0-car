@@ -17,6 +17,9 @@
 
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="assets/css/style.css">
+	
+	<!-- Custom CSS -->
+	<link rel="stylesheet" href="assets/css/custom.css">
 
 	<!-- Cropper.js CSS -->
 	<link

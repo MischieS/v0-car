@@ -1,0 +1,45 @@
+/* User dropdown styling */
+.header-navbar-rht .dropdown-toggle::after {
+  display: none;
+}
+
+.header-navbar-rht .user-img {
+  display: flex;
+  align-items: center;
+  background-color: #4e73df;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.header-navbar-rht .dropdown-menu {
+  min-width: 200px;
+  padding: 0;
+}
+
+.header-navbar-rht .dropdown-item {
+  padding: 10px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header-navbar-rht .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.header-navbar-rht .dropdown-item i {
+  width: 20px;
+  text-align: center;
+}
+
+.header-navbar-rht .dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #4e73df;
+}
+
+/* Fix for dropdown on mobile */
+@media (max-width: 991.98px) {
+  .header-navbar-rht {
+    margin-right: 50px;
+  }
+}

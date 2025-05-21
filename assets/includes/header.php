@@ -38,95 +38,105 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
 }
 ?>
 <header class="header">
-    <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg header-nav">
-            <div class="navbar-header">
-                <a id="mobile_btn" href="javascript:void(0);">
-                    <span class="bar-icon">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </span>
-                </a>
-                <a href="index.php" class="navbar-brand logo">
-                    <img src="assets/img/logo.png" class="img-fluid" alt="Logo">
-                </a>
-            </div>
-            <div class="main-menu-wrapper">
-                <div class="menu-header">
-                    <a href="index.php" class="menu-logo">
-                        <img src="assets/img/logo.png" class="img-fluid" alt="Logo">
-                    </a>
-                    <a id="menu_close" class="menu-close" href="javascript:void(0);">
-                        <i class="fas fa-times"></i>
-                    </a>
-                </div>
-                <ul class="main-nav">
-                    <li class="active">
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="booking_list.php">Cars</a>
-                    </li>
-                    <li>
-                        <a href="about_us.php">About Us</a>
-                    </li>
-                    <li>
-                        <a href="faq.php">FAQ</a>
-                    </li>
-                    <li>
-                        <a href="contact_us.php">Contact Us</a>
-                    </li>
-                </ul>
-            </div>
-            <ul class="nav header-navbar-rht">
-                <?php if (isset($_SESSION['user_id'])) { ?>
-                    <li class="nav-item dropdown has-arrow logged-item">
-                        <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-                            <span><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <?php if ($_SESSION['user_role'] === 'admin') { ?>
-                                <a class="dropdown-item" href="admin_dashboard.php">
-                                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                                </a>
-                                <a class="dropdown-item" href="admin_users.php">
-                                    <i class="fas fa-users"></i> Users
-                                </a>
-                                <a class="dropdown-item" href="admin_cars.php">
-                                    <i class="fas fa-car"></i> Cars
-                                </a>
-                                <a class="dropdown-item" href="admin_bookings.php">
-                                    <i class="fas fa-calendar-check"></i> Bookings
-                                </a>
-                                <a class="dropdown-item" href="admin_settings.php">
-                                    <i class="fas fa-cog"></i> Settings
-                                </a>
-                            <?php } else { ?>
-                                <a class="dropdown-item" href="user_dashboard.php">
-                                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                                </a>
-                                <a class="dropdown-item" href="user_bookings.php">
-                                    <i class="fas fa-calendar-check"></i> My Bookings
-                                </a>
-                                <a class="dropdown-item" href="user_settings.php">
-                                    <i class="fas fa-cog"></i> Profile Settings
-                                </a>
-                            <?php } ?>
-                            <a class="dropdown-item" href="backend/logout.php">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </div>
-                    </li>
-                <?php } else { ?>
-                    <li class="nav-item">
-                        <a class="nav-link header-login" href="login.php">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="register.php">Register</a>
-                    </li>
-                <?php } ?>
-            </ul>
-        </nav>
-    </div>
+   <div class="container-fluid">
+       <nav class="navbar navbar-expand-lg header-nav">
+           <div class="navbar-header">
+               <a id="mobile_btn" href="javascript:void(0);">
+                   <span class="bar-icon">
+                       <span></span>
+                       <span></span>
+                       <span></span>
+                   </span>
+               </a>
+               <a href="index.php" class="navbar-brand logo">
+                   <img src="assets/img/logo.svg" class="img-fluid" alt="Logo">
+               </a>
+               <a href="index.php" class="navbar-brand logo-small">
+                   <img src="assets/img/logo-small.png" class="img-fluid" alt="Logo">
+               </a>					
+           </div>
+           <div class="main-menu-wrapper">
+               <div class="menu-header">
+                   <a href="index.php" class="menu-logo">
+                       <img src="assets/img/logo.svg" class="img-fluid" alt="Logo">
+                   </a>
+                   <a id="menu_close" class="menu-close" href="javascript:void(0);"> <i class="fas fa-times"></i></a>
+               </div>
+               <ul class="main-nav">
+                   <li class="has-submenu">
+                       <a href="index.php">Home <i class="fas"></i></a>
+                   </li>
+                   <li class="has-submenu">
+                       <a href="booking_list.php">Cars<i class="fas"></i></a>
+                   </li>
+                   <li class="has-submenu">
+                       <a href="about_us.php">About Us <i class="fas"></i></a>
+                   </li>
+                   <li class="has-submenu">
+                       <a href="faq.php">FAQ <i class="fas"></i></a>
+                   </li>
+                   <li><a href="contact_us.php">Contact Us</a></li>
+                   <?php if (!isset($_SESSION["user_id"])): ?>
+                   <li class="login-link">
+                       <a href="register.php">Sign Up</a>
+                   </li>
+                   <li class="login-link">
+                       <a href="login.php">Sign In</a>
+                   </li>
+                   <?php endif; ?>
+               </ul>
+           </div>
+           <?php if (isset($_SESSION["user_id"])): ?>
+               <ul class="nav header-navbar-rht">
+                   <li class="nav-item dropdown has-arrow logged-item">
+                       <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+                           <span class="user-img">
+                               <i class="fa-regular fa-user me-2"></i>
+                               <?= htmlspecialchars($_SESSION["user_name"]) ?>
+                               <i class="fas fa-chevron-down ms-2"></i>
+                           </span>
+                       </a>
+                       <div class="dropdown-menu dropdown-menu-end">
+                           <?php if (isset($_SESSION["user_role"]) && $_SESSION["user_role"] === "admin"): ?>
+                               <a class="dropdown-item" href="admin_dashboard.php">
+                                   <i class="feather-shield me-2"></i> Admin Dashboard
+                               </a>
+                               <a class="dropdown-item" href="admin_users.php">
+                                   <i class="feather-users me-2"></i> Manage Users
+                               </a>
+                               <a class="dropdown-item" href="admin_cars.php">
+                                   <i class="feather-truck me-2"></i> Manage Cars
+                               </a>
+                               <a class="dropdown-item" href="admin_bookings.php">
+                                   <i class="feather-calendar me-2"></i> Manage Bookings
+                               </a>
+                           <?php else: ?>
+                               <a class="dropdown-item" href="user_dashboard.php">
+                                   <i class="feather-user-check me-2"></i> Dashboard
+                               </a>
+                               <a class="dropdown-item" href="user_bookings.php">
+                                   <i class="feather-calendar me-2"></i> My Bookings
+                               </a>
+                           <?php endif; ?>
+                           <a class="dropdown-item" href="user_settings.php">
+                               <i class="feather-settings me-2"></i> Settings
+                           </a>
+                           <a class="dropdown-item" href="backend/logout.php">
+                               <i class="feather-power me-2"></i> Logout
+                           </a>
+                       </div>
+                   </li>
+               </ul>
+           <?php else: ?>
+               <ul class="nav header-navbar-rht">
+                   <li class="nav-item">
+                       <a class="nav-link header-login" href="login.php"><span><i class="fa-regular fa-user"></i></span>Sign In</a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link header-reg" href="register.php"><span><i class="fa-solid fa-lock"></i></span>Sign Up</a>
+                   </li>
+               </ul>
+           <?php endif; ?>
+       </nav>
+   </div>
 </header>
