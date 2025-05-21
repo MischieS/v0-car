@@ -17,6 +17,9 @@ $username = 'root';
 $password = '';
 $dbname = 'car_rental_db';
 
+// Check if we need to update existing tables
+$updateMode = isset($_GET['update']) && $_GET['update'] == 1;
+
 // Output header with Bootstrap styling
 echo "<!DOCTYPE html>
 <html>
@@ -187,31 +190,59 @@ if ($row['count'] == 0) {
         ('Automatic'), ('Manual'), ('Semi-Automatic')");
 }
 
-// CARS TABLE
-$conn->query("CREATE TABLE IF NOT EXISTS cars (
-    car_id INT AUTO_INCREMENT PRIMARY KEY,
-    car_type VARCHAR(100) NOT NULL,
-    car_price_perday DECIMAL(10,2) NOT NULL,
-    year YEAR NOT NULL,
-    location_id INT NOT NULL,
-    car_class VARCHAR(50) NOT NULL,
-    car_image VARCHAR(255),
-    featured TINYINT(1) DEFAULT 0,
-    transmission VARCHAR(20) DEFAULT 'Automatic',
-    fuel_type VARCHAR(20) DEFAULT 'Petrol',
-    passengers INT DEFAULT 5,
-    brand_id INT,
-    model_id INT,
-    category_id INT,
-    fuel_type_id INT,
-    gear_type_id INT,
-    FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
-    FOREIGN KEY (brand_id) REFERENCES car_brands(id) ON DELETE SET NULL,
-    FOREIGN KEY (model_id) REFERENCES car_models(id) ON DELETE SET NULL,
-    FOREIGN KEY (category_id) REFERENCES car_categories(id) ON DELETE SET NULL,
-    FOREIGN KEY (fuel_type_id) REFERENCES fuel_types(id) ON DELETE SET NULL,
-    FOREIGN KEY (gear_type_id) REFERENCES gear_types(id) ON DELETE SET NULL
-) ENGINE=InnoDB");
+// Check if cars table exists
+$tableExists = $conn->query("SHOW TABLES LIKE 'cars'")->num_rows > 0;
+
+// If table exists and we're in update mode, check for missing columns
+if ($tableExists && $updateMode) {
+    // Check for brand_id column
+    $result = $conn->query("SHOW COLUMNS FROM cars LIKE 'brand_id'");
+    if ($result->num_rows == 0) {
+        $conn->query("ALTER TABLE cars ADD COLUMN brand_id INT NULL");
+        $conn->query("ALTER TABLE cars ADD COLUMN model_id INT NULL");
+        $conn->query("ALTER TABLE cars ADD COLUMN category_id INT NULL");
+        $conn->query("ALTER TABLE cars ADD COLUMN fuel_type_id INT NULL");
+        $conn->query("ALTER TABLE cars ADD COLUMN gear_type_id INT NULL");
+        $conn->query("ALTER TABLE cars ADD COLUMN featured TINYINT(1) DEFAULT 0");
+        
+        echo "<div class='alert alert-success'>Added missing columns to cars table</div>";
+    }
+    
+    // Add foreign key constraints if they don't exist
+    $conn->query("ALTER TABLE cars ADD CONSTRAINT fk_brand FOREIGN KEY (brand_id) REFERENCES car_brands(id) ON DELETE SET NULL");
+    $conn->query("ALTER TABLE cars ADD CONSTRAINT fk_model FOREIGN KEY (model_id) REFERENCES car_models(id) ON DELETE SET NULL");
+    $conn->query("ALTER TABLE cars ADD CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES car_categories(id) ON DELETE SET NULL");
+    $conn->query("ALTER TABLE cars ADD CONSTRAINT fk_fuel FOREIGN KEY (fuel_type_id) REFERENCES fuel_types(id) ON DELETE SET NULL");
+    $conn->query("ALTER TABLE cars ADD CONSTRAINT fk_gear FOREIGN KEY (gear_type_id) REFERENCES gear_types(id) ON DELETE SET NULL");
+}
+
+// CARS TABLE - Create if it doesn't exist
+if (!$tableExists) {
+    $conn->query("CREATE TABLE IF NOT EXISTS cars (
+        car_id INT AUTO_INCREMENT PRIMARY KEY,
+        car_type VARCHAR(100) NOT NULL,
+        car_price_perday DECIMAL(10,2) NOT NULL,
+        year YEAR NOT NULL,
+        location_id INT NOT NULL,
+        car_class VARCHAR(50) NOT NULL,
+        car_image VARCHAR(255),
+        featured TINYINT(1) DEFAULT 0,
+        transmission VARCHAR(20) DEFAULT 'Automatic',
+        fuel_type VARCHAR(20) DEFAULT 'Petrol',
+        passengers INT DEFAULT 5,
+        brand_id INT,
+        model_id INT,
+        category_id INT,
+        fuel_type_id INT,
+        gear_type_id INT,
+        FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
+        FOREIGN KEY (brand_id) REFERENCES car_brands(id) ON DELETE SET NULL,
+        FOREIGN KEY (model_id) REFERENCES car_models(id) ON DELETE SET NULL,
+        FOREIGN KEY (category_id) REFERENCES car_categories(id) ON DELETE SET NULL,
+        FOREIGN KEY (fuel_type_id) REFERENCES fuel_types(id) ON DELETE SET NULL,
+        FOREIGN KEY (gear_type_id) REFERENCES gear_types(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB");
+}
 
 // CAR IMAGES TABLE
 $conn->query("CREATE TABLE IF NOT EXISTS car_images (

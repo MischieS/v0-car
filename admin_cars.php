@@ -8,28 +8,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
 require_once __DIR__ . '/backend/db_connect.php';
 if (!($conn instanceof mysqli)) die('Database connection failed.');
 
-function fetchSafe($conn, $sql) {
-    // Check if the table exists before running the query
-    $tableName = '';
-    if (preg_match('/FROM\s+`?(\w+)`?/i', $sql, $matches)) {
-        $tableName = $matches[1];
-    }
-    
-    if (!empty($tableName)) {
-        $tableExists = $conn->query("SHOW TABLES LIKE '$tableName'")->num_rows > 0;
-        if (!$tableExists) {
-            // Redirect to setup if table doesn't exist
-            header('Location: backend/setup_database.php');
-            exit;
-        }
-    }
-    
-    $res = $conn->query($sql);
-    if (!$res) die("SQL Error: " . $conn->error);
-    return $res->fetch_all(MYSQLI_ASSOC);
-}
-
-// Check if required tables exist
+// Check if required tables exist and redirect to setup if needed
 $requiredTables = ['car_brands', 'car_models', 'car_categories', 'fuel_types', 'gear_types', 'locations', 'cars'];
 $missingTables = [];
 
@@ -46,46 +25,84 @@ if (!empty($missingTables)) {
     exit;
 }
 
+// Check if the cars table has the required columns
+$result = $conn->query("SHOW COLUMNS FROM cars LIKE 'brand_id'");
+if ($result->num_rows == 0) {
+    // Redirect to setup to update the table structure
+    header('Location: backend/setup_database.php?update=1');
+    exit;
+}
+
+function fetchSafe($conn, $sql) {
+    $res = $conn->query($sql);
+    if (!$res) die("SQL Error: " . $conn->error);
+    return $res->fetch_all(MYSQLI_ASSOC);
+}
+
 $locations  = fetchSafe($conn, "SELECT location_id, location_name FROM locations ORDER BY location_name");
 $brands     = fetchSafe($conn, "SELECT id, brand_name FROM car_brands ORDER BY brand_name");
 $categories = fetchSafe($conn, "SELECT id, category_name FROM car_categories ORDER BY category_name");
 $fuelTypes  = fetchSafe($conn, "SELECT id, fuel_name FROM fuel_types ORDER BY fuel_name");
 $gearTypes  = fetchSafe($conn, "SELECT id, gear_name FROM gear_types ORDER BY gear_name");
 
-$where = [];
-$params = [];
-$types = '';
-
-if (!empty($_GET['brand_id'])) {
-    $where[] = 'c.brand_id = ?';
-    $params[] = (int) $_GET['brand_id'];
-    $types .= 'i';
+// Get all cars with a simpler query to avoid join issues
+$sql = "SELECT * FROM cars ORDER BY car_id DESC";
+$result = $conn->query($sql);
+$cars = [];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        // Get additional information for each car
+        if (!empty($row['brand_id'])) {
+            $brandResult = $conn->query("SELECT brand_name FROM car_brands WHERE id = " . $row['brand_id']);
+            if ($brandResult && $brandResult->num_rows > 0) {
+                $brand = $brandResult->fetch_assoc();
+                $row['brand_name'] = $brand['brand_name'];
+            }
+        }
+        
+        if (!empty($row['model_id'])) {
+            $modelResult = $conn->query("SELECT model_name FROM car_models WHERE id = " . $row['model_id']);
+            if ($modelResult && $modelResult->num_rows > 0) {
+                $model = $modelResult->fetch_assoc();
+                $row['model_name'] = $model['model_name'];
+            }
+        }
+        
+        if (!empty($row['category_id'])) {
+            $categoryResult = $conn->query("SELECT category_name FROM car_categories WHERE id = " . $row['category_id']);
+            if ($categoryResult && $categoryResult->num_rows > 0) {
+                $category = $categoryResult->fetch_assoc();
+                $row['category_name'] = $category['category_name'];
+            }
+        }
+        
+        if (!empty($row['fuel_type_id'])) {
+            $fuelResult = $conn->query("SELECT fuel_name FROM fuel_types WHERE id = " . $row['fuel_type_id']);
+            if ($fuelResult && $fuelResult->num_rows > 0) {
+                $fuel = $fuelResult->fetch_assoc();
+                $row['fuel_name'] = $fuel['fuel_name'];
+            }
+        }
+        
+        if (!empty($row['gear_type_id'])) {
+            $gearResult = $conn->query("SELECT gear_name FROM gear_types WHERE id = " . $row['gear_type_id']);
+            if ($gearResult && $gearResult->num_rows > 0) {
+                $gear = $gearResult->fetch_assoc();
+                $row['gear_name'] = $gear['gear_name'];
+            }
+        }
+        
+        if (!empty($row['location_id'])) {
+            $locationResult = $conn->query("SELECT location_name FROM locations WHERE location_id = " . $row['location_id']);
+            if ($locationResult && $locationResult->num_rows > 0) {
+                $location = $locationResult->fetch_assoc();
+                $row['location_name'] = $location['location_name'];
+            }
+        }
+        
+        $cars[] = $row;
+    }
 }
-if (!empty($_GET['location_id'])) {
-    $where[] = 'c.location_id = ?';
-    $params[] = (int) $_GET['location_id'];
-    $types .= 'i';
-}
-
-$sql = "
-    SELECT c.*, l.location_name, cb.brand_name, cm.model_name, cc.category_name,
-           ft.fuel_name, gt.gear_name
-    FROM cars c
-    LEFT JOIN locations l ON c.location_id = l.location_id
-    LEFT JOIN car_brands cb ON c.brand_id = cb.id
-    LEFT JOIN car_models cm ON c.model_id = cm.id
-    LEFT JOIN car_categories cc ON c.category_id = cc.id
-    LEFT JOIN fuel_types ft ON c.fuel_type_id = ft.id
-    LEFT JOIN gear_types gt ON c.gear_type_id = gt.id
-";
-
-if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
-$sql .= ' ORDER BY c.car_id DESC';
-
-$stmt = $conn->prepare($sql);
-if ($params) $stmt->bind_param($types, ...$params);
-$stmt->execute();
-$cars = $stmt->get_result();
 
 include 'assets/includes/header_link.php';
 ?>
@@ -108,7 +125,7 @@ include 'assets/includes/header_link.php';
         <h2 class="breadcrumb-title">Cars</h2>
         <nav aria-label="breadcrumb" class="page-breadcrumb">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item"><a href="index.php">Home</a></li>
             <li class="breadcrumb-item active" aria-current="page">Cars</li>
           </ol>
         </nav>
@@ -146,7 +163,7 @@ include 'assets/includes/header_link.php';
       <select name="brand_id" class="form-select">
         <option value="">All Brands</option>
         <?php foreach ($brands as $b): ?>
-          <option value="<?= $b['id'] ?>" <?= $_GET['brand_id'] ?? '' == $b['id'] ? 'selected' : '' ?>>
+          <option value="<?= $b['id'] ?>" <?= isset($_GET['brand_id']) && $_GET['brand_id'] == $b['id'] ? 'selected' : '' ?>>
             <?= htmlspecialchars($b['brand_name']) ?>
           </option>
         <?php endforeach; ?>
@@ -156,7 +173,7 @@ include 'assets/includes/header_link.php';
       <select name="location_id" class="form-select">
         <option value="">All Locations</option>
         <?php foreach ($locations as $l): ?>
-          <option value="<?= $l['location_id'] ?>" <?= $_GET['location_id'] ?? '' == $l['location_id'] ? 'selected' : '' ?>>
+          <option value="<?= $l['location_id'] ?>" <?= isset($_GET['location_id']) && $_GET['location_id'] == $l['location_id'] ? 'selected' : '' ?>>
             <?= htmlspecialchars($l['location_name']) ?>
           </option>
         <?php endforeach; ?>
@@ -183,20 +200,20 @@ include 'assets/includes/header_link.php';
         </tr>
       </thead>
       <tbody>
-        <?php while ($car = $cars->fetch_assoc()): ?>
+        <?php foreach ($cars as $car): ?>
         <tr>
           <td><?= $car['car_id'] ?></td>
           <td><?= htmlspecialchars($car['brand_name'] ?? '-') ?></td>
           <td><?= htmlspecialchars($car['model_name'] ?? '-') ?></td>
           <td>$<?= number_format($car['car_price_perday'], 2) ?></td>
-          <td><?= htmlspecialchars($car['fuel_name'] ?? '-') ?></td>
-          <td><?= htmlspecialchars($car['gear_name'] ?? '-') ?></td>
+          <td><?= htmlspecialchars($car['fuel_name'] ?? $car['fuel_type'] ?? '-') ?></td>
+          <td><?= htmlspecialchars($car['gear_name'] ?? $car['transmission'] ?? '-') ?></td>
           <td><?= $car['year'] ?></td>
           <td><?= htmlspecialchars($car['car_class']) ?></td>
-          <td><?= htmlspecialchars($car['location_name']) ?></td>
+          <td><?= htmlspecialchars($car['location_name'] ?? '-') ?></td>
           <td>
-            <?php if ($car['car_image']): ?>
-              <img src="assets/img/cars/<?= htmlspecialchars($car['car_image']) ?>" height="50" class="rounded">
+            <?php if (!empty($car['car_image'])): ?>
+              <img src="<?= htmlspecialchars($car['car_image']) ?>" height="50" class="rounded">
             <?php else: ?>
               <span class="text-muted">No Image</span>
             <?php endif; ?>
@@ -207,7 +224,7 @@ include 'assets/includes/header_link.php';
             <a href="backend/process_car.php?action=delete&id=<?= $car['car_id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this car?');"><i class="bi bi-trash-fill"></i></a>
           </td>
         </tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
       </tbody>
     </table>
   </div>
@@ -366,29 +383,31 @@ window.openEditModal = function(car) {
   document.getElementById('modalTitle').textContent = 'Edit Car';
   document.getElementById('formAction').value = 'edit';
   document.getElementById('carId').value = car.car_id;
-  document.getElementById('carBrand').value = car.brand_id;
-  document.getElementById('carCategory').value = car.category_id;
-  document.getElementById('carFuel').value = car.fuel_type_id;
-  document.getElementById('carGear').value = car.gear_type_id;
+  document.getElementById('carBrand').value = car.brand_id || '';
+  document.getElementById('carCategory').value = car.category_id || '';
+  document.getElementById('carFuel').value = car.fuel_type_id || '';
+  document.getElementById('carGear').value = car.gear_type_id || '';
   document.getElementById('carPrice').value = car.car_price_perday;
   document.getElementById('carYear').value = car.year;
   document.getElementById('carLocation').value = car.location_id;
   document.getElementById('carType').value = car.car_type;
   document.getElementById('carClass').value = car.car_class;
 
-  fetch('backend/get_models.php?brand_id=' + car.brand_id)
-    .then(res => res.json())
-    .then(data => {
-      const modelSelect = document.getElementById('carModel');
-      modelSelect.innerHTML = '<option value="">Select model</option>';
-      data.forEach(model => {
-        const opt = document.createElement('option');
-        opt.value = model.id;
-        opt.textContent = model.model_name;
-        if (model.id == car.model_id) opt.selected = true;
-        modelSelect.appendChild(opt);
+  if (car.brand_id) {
+    fetch('backend/get_models.php?brand_id=' + car.brand_id)
+      .then(res => res.json())
+      .then(data => {
+        const modelSelect = document.getElementById('carModel');
+        modelSelect.innerHTML = '<option value="">Select model</option>';
+        data.forEach(model => {
+          const opt = document.createElement('option');
+          opt.value = model.id;
+          opt.textContent = model.model_name;
+          if (model.id == car.model_id) opt.selected = true;
+          modelSelect.appendChild(opt);
+        });
       });
-    });
+  }
 
   document.getElementById('carImages').value = '';
   document.getElementById('previewGallery').innerHTML = '';
