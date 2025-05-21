@@ -89,39 +89,39 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
            <?php if (isset($_SESSION["user_id"])): ?>
                <ul class="nav header-navbar-rht">
                    <li class="nav-item dropdown">
-                       <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                       <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                            <?= htmlspecialchars($_SESSION["user_name"]) ?>
-                       </a>
-                       <div class="dropdown-menu dropdown-menu-end shadow">
+                       </button>
+                       <ul class="dropdown-menu dropdown-menu-end">
                            <?php if (isset($_SESSION["user_role"]) && $_SESSION["user_role"] === "admin"): ?>
-                               <a class="dropdown-item" href="admin_dashboard.php">
-                                   <i class="feather-shield me-2"></i> Admin Dashboard
-                               </a>
-                               <a class="dropdown-item" href="admin_users.php">
-                                   <i class="feather-users me-2"></i> Manage Users
-                               </a>
-                               <a class="dropdown-item" href="admin_cars.php">
-                                   <i class="feather-truck me-2"></i> Manage Cars
-                               </a>
-                               <a class="dropdown-item" href="admin_bookings.php">
-                                   <i class="feather-calendar me-2"></i> Manage Bookings
-                               </a>
+                               <li><a class="dropdown-item" href="admin_dashboard.php">
+                                   <i class="fas fa-tachometer-alt me-2"></i> Admin Dashboard
+                               </a></li>
+                               <li><a class="dropdown-item" href="admin_users.php">
+                                   <i class="fas fa-users me-2"></i> Manage Users
+                               </a></li>
+                               <li><a class="dropdown-item" href="admin_cars.php">
+                                   <i class="fas fa-car me-2"></i> Manage Cars
+                               </a></li>
+                               <li><a class="dropdown-item" href="admin_bookings.php">
+                                   <i class="fas fa-calendar-check me-2"></i> Manage Bookings
+                               </a></li>
                            <?php else: ?>
-                               <a class="dropdown-item" href="user_dashboard.php">
-                                   <i class="feather-user-check me-2"></i> Dashboard
-                               </a>
-                               <a class="dropdown-item" href="user_bookings.php">
-                                   <i class="feather-calendar me-2"></i> My Bookings
-                               </a>
+                               <li><a class="dropdown-item" href="user_dashboard.php">
+                                   <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                               </a></li>
+                               <li><a class="dropdown-item" href="user_bookings.php">
+                                   <i class="fas fa-calendar-check me-2"></i> My Bookings
+                               </a></li>
                            <?php endif; ?>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item" href="user_settings.php">
-                               <i class="feather-settings me-2"></i> Settings
-                           </a>
-                           <a class="dropdown-item" href="backend/logout.php">
-                               <i class="feather-power me-2"></i> Logout
-                           </a>
-                       </div>
+                           <li><hr class="dropdown-divider"></li>
+                           <li><a class="dropdown-item" href="user_settings.php">
+                               <i class="fas fa-cog me-2"></i> Settings
+                           </a></li>
+                           <li><a class="dropdown-item" href="backend/logout.php">
+                               <i class="fas fa-sign-out-alt me-2"></i> Logout
+                           </a></li>
+                       </ul>
                    </li>
                </ul>
            <?php else: ?>
