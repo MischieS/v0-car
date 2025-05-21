@@ -512,7 +512,17 @@ require_once 'backend/db_connect.php';
                 <div class="row">
                     <?php
                     // Get featured cars from database
-                    $sql = "SELECT * FROM cars WHERE featured = 1 LIMIT 6";
+                    // First, check if the 'featured' column exists in the cars table
+                    $checkColumn = $conn->query("SHOW COLUMNS FROM cars LIKE 'featured'");
+                    
+                    if ($checkColumn && $checkColumn->num_rows > 0) {
+                        // 'featured' column exists, use it
+                        $sql = "SELECT * FROM cars WHERE featured = 1 LIMIT 6";
+                    } else {
+                        // 'featured' column doesn't exist, get the most recent cars instead
+                        $sql = "SELECT * FROM cars ORDER BY car_id DESC LIMIT 6";
+                    }
+                    
                     $result = $conn->query($sql);
                     
                     if ($result && $result->num_rows > 0) {
