@@ -42,57 +42,58 @@ try {
         die("Failed to select database: " . $conn->error);
     }
     
-    // Check if users table exists, create if not
-    $result = $conn->query("SHOW TABLES LIKE 'users'");
-    if ($result->num_rows == 0) {
-        // Create users table
-        $sql = "CREATE TABLE IF NOT EXISTS `users` (
-            `id` INT(11) NOT NULL AUTO_INCREMENT,
-            `name` VARCHAR(100) NOT NULL,
-            `email` VARCHAR(100) NOT NULL UNIQUE,
-            `password` VARCHAR(255) NOT NULL,
-            `phone` VARCHAR(20) DEFAULT NULL,
-            `address` TEXT DEFAULT NULL,
-            `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user',
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-        
-        if (!$conn->query($sql)) {
-            logDbError("Failed to create users table: " . $conn->error);
-            die("Failed to create users table: " . $conn->error);
-        }
-        
-        // Create default admin user
-        $adminName = 'Admin User';
-        $adminEmail = 'admin@example.com';
-        $adminPassword = password_hash('admin123', PASSWORD_DEFAULT);
-        $adminRole = 'admin';
-        
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $adminName, $adminEmail, $adminPassword, $adminRole);
-        
-        if (!$stmt->execute()) {
-            logDbError("Failed to create admin user: " . $stmt->error);
-        }
-        
-        // Create test user
-        $testName = 'Test User';
-        $testEmail = 'test@example.com';
-        $testPassword = password_hash('password123', PASSWORD_DEFAULT);
-        $testRole = 'user';
-        
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $testName, $testEmail, $testPassword, $testRole);
-        
-        if (!$stmt->execute()) {
-            logDbError("Failed to create test user: " . $stmt->error);
-        }
-    }
 } catch (Exception $e) {
     logDbError("Exception: " . $e->getMessage());
     die("Database connection error: " . $e->getMessage());
+}
+
+// Check if users table exists, create if not
+$result = $conn->query("SHOW TABLES LIKE 'users'");
+if ($result->num_rows == 0) {
+    // Create users table
+    $sql = "CREATE TABLE IF NOT EXISTS `users` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(100) NOT NULL,
+        `email` VARCHAR(100) NOT NULL UNIQUE,
+        `password` VARCHAR(255) NOT NULL,
+        `phone` VARCHAR(20) DEFAULT NULL,
+        `address` TEXT DEFAULT NULL,
+        `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user',
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+    
+    if (!$conn->query($sql)) {
+        logDbError("Failed to create users table: " . $conn->error);
+        die("Failed to create users table: " . $conn->error);
+    }
+    
+    // Create default admin user
+    $adminName = 'Admin User';
+    $adminEmail = 'admin@example.com';
+    $adminPassword = password_hash('admin123', PASSWORD_DEFAULT);
+    $adminRole = 'admin';
+    
+    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $adminName, $adminEmail, $adminPassword, $adminRole);
+    
+    if (!$stmt->execute()) {
+        logDbError("Failed to create admin user: " . $stmt->error);
+    }
+    
+    // Create test user
+    $testName = 'Test User';
+    $testEmail = 'test@example.com';
+    $testPassword = password_hash('password123', PASSWORD_DEFAULT);
+    $testRole = 'user';
+    
+    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $testName, $testEmail, $testPassword, $testRole);
+    
+    if (!$stmt->execute()) {
+        logDbError("Failed to create test user: " . $stmt->error);
+    }
 }
 
 // Function to normalize mobile number (kept from original)

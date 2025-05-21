@@ -7,6 +7,14 @@ if (session_status() === PHP_SESSION_NONE) {
 // Include database connection
 require_once 'backend/db_connect.php';
 
+// Check if the cars table exists
+$tableCheck = $conn->query("SHOW TABLES LIKE 'cars'");
+if ($tableCheck->num_rows == 0) {
+    // Table doesn't exist, redirect to database setup
+    header("Location: backend/db_setup.php");
+    exit;
+}
+
 // Debug session (can be removed in production)
 // echo "<!-- Session debug: " . (isset($_SESSION['user_id']) ? "User ID: " . $_SESSION['user_id'] : "No user logged in") . " -->";
 ?>

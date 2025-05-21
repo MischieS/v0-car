@@ -1,4 +1,34 @@
 <?php
+// Start session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Add a header to show setup is in progress
+echo "<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Setup</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1, h2 { color: #2563eb; }
+        .message { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .info { background-color: #dbeafe; color: #1e40af; }
+        .success { background-color: #dcfce7; color: #166534; }
+        .error { background-color: #fee2e2; color: #991b1b; }
+        .action-btn { display: inline-block; margin: 10px 0; padding: 8px 16px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>Database Setup</h1>
+        <div class='message info'>Setting up database tables. Please wait...</div>";
+
 mysqli_report(MYSQLI_REPORT_OFF);
 $setup = new mysqli('localhost', 'root', '');
 if ($setup->connect_error) die('Setup DB failed: ' . $setup->connect_error);
@@ -436,4 +466,8 @@ foreach ($directories as $dir) {
 echo "✅ Database setup complete. Admin: admin@gmail.com / Pass: admin123<br>";
 echo "✅ Example users created: john@example.com and jane@example.com (password: password123)<br>";
 echo "✅ Example cars and reservations added.";
+
+echo "<div class='message success'>Database setup completed successfully!</div>";
+echo "<div><a href='../index.php' class='action-btn'>Go to Homepage</a></div>";
+echo "</div></body></html>";
 ?>
