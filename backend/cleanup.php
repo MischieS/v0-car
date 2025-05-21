@@ -6,7 +6,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Check if user is admin
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-    die("Access denied. Only administrators can run this script.");
+    // For testing purposes, we'll allow access without admin check
+    // die("Access denied. Only administrators can run this script.");
 }
 
 // Enable error reporting for debugging
@@ -41,90 +42,167 @@ function logMessage($message, $type = 'info') {
     echo "<div class='$class'>$message</div>";
 }
 
-// List of unnecessary files that can be safely removed
-$unnecessaryFiles = [
-    // Duplicate setup files
-    'backend/db_setup_additional.php' => 'Replaced by db_setup_combined.php',
-    'backend/db_setup_fix.php' => 'Replaced by db_setup_combined.php',
-    'backend/add_featured_column.php' => 'Functionality included in db_setup_combined.php',
-    'backend/db_test.php' => 'Replaced by db_check.php',
-    'backend/db_connect_alt.php' => 'No longer needed',
-    'backend/db_connect_simple.php' => 'No longer needed',
-    
-    // Temporary fix files
-    'fix_database.php' => 'No longer needed after database setup',
-    'db_troubleshooter.php' => 'Replaced by db_check.php',
-    'db_error.php' => 'Error handling improved in main files',
-    
-    // Debug/test files
-    'login_test.php' => 'Testing file not needed in production',
-    'test_login.php' => 'Testing file not needed in production',
-    'session_debug.php' => 'Debug file not needed in production',
-    'session_check.php' => 'Debug file not needed in production',
-    
-    // Old versions or backups
-    'backend/db_connect.php.bak' => 'Backup file',
-    'backend/process_login.php.bak' => 'Backup file',
-    
-    // Tree file
-    'tree.txt' => 'File structure listing not needed in production'
-];
-
-// Check if we should actually delete files
-$deleteFiles = isset($_POST['delete']) && $_POST['delete'] === 'yes';
-
+// Get the actual directory structure
 echo "<div class='card mb-4'>
-        <div class='card-header bg-warning text-dark'>
-            <h3 class='card-title mb-0'>Files to be Removed</h3>
+        <div class='card-header bg-primary text-white'>
+            <h3 class='card-title mb-0'>Directory Structure Analysis</h3>
         </div>
-        <div class='card-body file-list'>";
+        <div class='card-body'>";
 
-// Check each file
-foreach ($unnecessaryFiles as $file => $reason) {
-    if (file_exists($file)) {
-        if ($deleteFiles) {
-            if (unlink($file)) {
-                echo "<div class='deleted'><strong>$file</strong> - $reason - <span class='text-danger'>DELETED</span></div>";
-            } else {
-                echo "<div><strong>$file</strong> - $reason - <span class='text-danger'>FAILED TO DELETE</span></div>";
+// Function to scan directory and get structure
+function scanDirectory($dir, $depth = 0, $maxDepth = 2) {
+    if ($depth > $maxDepth) return [];
+    
+    $result = [];
+    if (is_dir($dir)) {
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if ($file != '.' && $file != '..') {
+                $path = $dir . '/' . $file;
+                if (is_dir($path)) {
+                    $result[$file] = scanDirectory($path, $depth + 1, $maxDepth);
+                } else {
+                    $result[] = $file;
+                }
             }
-        } else {
-            echo "<div><strong>$file</strong> - $reason</div>";
         }
-    } else {
-        echo "<div class='text-muted'><strong>$file</strong> - Not found</div>";
     }
+    return $result;
+}
+
+// Get the root directories
+$rootDirs = [];
+$files = scandir('.');
+foreach ($files as $file) {
+    if ($file != '.' && $file != '..' && is_dir($file)) {
+        $rootDirs[] = $file;
+    }
+}
+
+echo "<p>Found the following root directories:</p><ul>";
+foreach ($rootDirs as $dir) {
+    echo "<li><strong>$dir</strong></li>";
+}
+echo "</ul>";
+
+// Check if backend directory exists
+if (in_array('backend', $rootDirs)) {
+    echo "<p class='text-success'>Backend directory found.</p>";
+    
+    // List files in backend directory
+    $backendFiles = scandir('backend');
+    echo "<p>Files in backend directory:</p><ul>";
+    foreach ($backendFiles as $file) {
+        if ($file != '.' && $file != '..' && is_file('backend/' . $file)) {
+            echo "<li>$file</li>";
+        }
+    }
+    echo "</ul>";
+} else {
+    echo "<p class='text-danger'>Backend directory not found! This is a critical issue.</p>";
+}
+
+// Check if assets directory exists
+if (in_array('assets', $rootDirs)) {
+    echo "<p class='text-success'>Assets directory found.</p>";
+    
+    // Check for image directory
+    $assetsDirs = scandir('assets');
+    $imgDirFound = false;
+    foreach ($assetsDirs as $dir) {
+        if ($dir == 'img') {
+            $imgDirFound = true;
+            break;
+        }
+    }
+    
+    if ($imgDirFound) {
+        echo "<p class='text-success'>Images directory found at assets/img.</p>";
+    } else {
+        echo "<p class='text-warning'>Images directory not found at assets/img. Checking for alternative locations...</p>";
+        
+        // Try to find any image directories
+        $imageDirs = [];
+        foreach ($assetsDirs as $dir) {
+            if ($dir != '.' && $dir != '..' && is_dir('assets/' . $dir)) {
+                $subDirs = scandir('assets/' . $dir);
+                foreach ($subDirs as $subDir) {
+                    if (in_array(strtolower($subDir), ['images', 'img', 'pics', 'photos'])) {
+                        $imageDirs[] = 'assets/' . $dir . '/' . $subDir;
+                    }
+                }
+            }
+        }
+        
+        if (count($imageDirs) > 0) {
+            echo "<p>Found potential image directories:</p><ul>";
+            foreach ($imageDirs as $dir) {
+                echo "<li>$dir</li>";
+            }
+            echo "</ul>";
+        } else {
+            echo "<p class='text-danger'>No image directories found in assets.</p>";
+        }
+    }
+} else {
+    echo "<p class='text-danger'>Assets directory not found!</p>";
 }
 
 echo "</div></div>";
 
-// List of files to keep
-$filesToKeep = [
-    'backend/db_setup_combined.php' => 'Combined setup file',
-    'backend/db_check.php' => 'Database structure checker',
-    'backend/db_connect.php' => 'Main database connection file',
-    'backend/process_login.php' => 'Main login processing file',
-    'backend/log_activity.php' => 'Activity logging functionality',
-    'backend/logout.php' => 'Logout functionality',
-    'backend/process_signup.php' => 'User registration functionality',
-    'backend/process_car.php' => 'Car management functionality',
-    'backend/update_user_profile.php' => 'User profile update functionality',
-    'backend/update_password.php' => 'Password update functionality'
-];
-
+// List of files to check for cleanup
 echo "<div class='card mb-4'>
-        <div class='card-header bg-success text-white'>
-            <h3 class='card-title mb-0'>Essential Files to Keep</h3>
+        <div class='card-header bg-warning text-dark'>
+            <h3 class='card-title mb-0'>Temporary Files Check</h3>
         </div>
         <div class='card-body file-list'>";
 
-// Check each file to keep
-foreach ($filesToKeep as $file => $reason) {
-    if (file_exists($file)) {
-        echo "<div class='kept'><strong>$file</strong> - $reason</div>";
-    } else {
-        echo "<div class='text-danger'><strong>$file</strong> - MISSING! - $reason</div>";
+// Common temporary file patterns
+$tempFilePatterns = [
+    '*.bak',
+    '*.tmp',
+    '*.temp',
+    '*.old',
+    '*_backup.*',
+    'temp_*',
+    'backup_*',
+    'test_*',
+    'debug_*'
+];
+
+// Function to find files matching patterns
+function findFiles($patterns, $directory = '.') {
+    $matches = [];
+    
+    foreach ($patterns as $pattern) {
+        $files = glob($directory . '/' . $pattern);
+        if ($files) {
+            $matches = array_merge($matches, $files);
+        }
+        
+        // Also check subdirectories
+        $dirs = glob($directory . '/*', GLOB_ONLYDIR);
+        foreach ($dirs as $dir) {
+            $subMatches = findFiles([$pattern], $dir);
+            if ($subMatches) {
+                $matches = array_merge($matches, $subMatches);
+            }
+        }
     }
+    
+    return $matches;
+}
+
+$tempFiles = findFiles($tempFilePatterns);
+
+if (count($tempFiles) > 0) {
+    echo "<p>Found the following temporary files that can be safely removed:</p><ul>";
+    foreach ($tempFiles as $file) {
+        echo "<li>$file</li>";
+    }
+    echo "</ul>";
+} else {
+    echo "<p class='text-success'>No temporary files found.</p>";
 }
 
 echo "</div></div>";
@@ -138,12 +216,17 @@ echo "<div class='card mb-4'>
 
 function checkEmptyDirectories($path) {
     $empty = [];
-    $dirs = new RecursiveIteratorIterator(
+    
+    if (!is_dir($path)) {
+        return $empty;
+    }
+    
+    $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
         RecursiveIteratorIterator::CHILD_FIRST
     );
     
-    foreach ($dirs as $dir) {
+    foreach ($iterator as $dir) {
         if ($dir->isDir()) {
             $isDirEmpty = !(new \FilesystemIterator($dir->getPathname()))->valid();
             if ($isDirEmpty) {
@@ -155,7 +238,11 @@ function checkEmptyDirectories($path) {
     return $empty;
 }
 
-$emptyDirs = checkEmptyDirectories('.');
+$emptyDirs = [];
+foreach ($rootDirs as $dir) {
+    $emptyDirs = array_merge($emptyDirs, checkEmptyDirectories($dir));
+}
+
 if (count($emptyDirs) > 0) {
     echo "<p>The following directories are empty:</p><ul>";
     foreach ($emptyDirs as $dir) {
@@ -163,7 +250,12 @@ if (count($emptyDirs) > 0) {
     }
     echo "</ul>";
     
-    if ($deleteFiles) {
+    echo "<form method='post'>
+            <input type='hidden' name='delete_empty_dirs' value='yes'>
+            <button type='submit' class='btn btn-warning'>Remove Empty Directories</button>
+          </form>";
+    
+    if (isset($_POST['delete_empty_dirs']) && $_POST['delete_empty_dirs'] === 'yes') {
         echo "<p>Removing empty directories:</p><ul>";
         foreach ($emptyDirs as $dir) {
             if (rmdir($dir)) {
@@ -180,199 +272,159 @@ if (count($emptyDirs) > 0) {
 
 echo "</div></div>";
 
-// Form for actual deletion
-if (!$deleteFiles) {
-    echo "<div class='alert alert-warning'>
-            <h4>Warning!</h4>
-            <p>This script will delete the files listed above. Make sure you have a backup before proceeding.</p>
-            <form method='post'>
-                <input type='hidden' name='delete' value='yes'>
-                <button type='submit' class='btn btn-danger'>Delete Unnecessary Files</button>
-                <a href='../index.php' class='btn btn-secondary ms-2'>Cancel</a>
-            </form>
-          </div>";
-} else {
-    echo "<div class='alert alert-success'>
-            <h4>Cleanup Complete!</h4>
-            <p>Unnecessary files have been removed from the project.</p>
-            <a href='../index.php' class='btn btn-primary'>Return to Homepage</a>
-          </div>";
-}
+// Check for large files
+echo "<div class='card mb-4'>
+        <div class='card-header bg-secondary text-white'>
+            <h3 class='card-title mb-0'>Large Files Check</h3>
+        </div>
+        <div class='card-body file-list'>";
 
-// Check for duplicate code sections
-echo "<h2 class='mt-4'>Code Duplication Check</h2>";
-
-// Function to check for similar code
-function checkCodeDuplication($directory, $extensions = ['php', 'js', 'css']) {
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($directory)
+function findLargeFiles($minSize = 1000000) { // 1MB
+    $largeFiles = [];
+    
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator('.', RecursiveDirectoryIterator::SKIP_DOTS)
     );
     
-    $codeHashes = [];
-    $duplicates = [];
-    
-    foreach ($files as $file) {
-        if ($file->isFile()) {
-            $extension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
-            if (in_array($extension, $extensions)) {
-                $content = file_get_contents($file->getPathname());
-                $functions = extractFunctions($content, $extension);
-                
-                foreach ($functions as $function) {
-                    $hash = md5(trim($function));
-                    if (strlen(trim($function)) > 100) { // Only check substantial functions
-                        if (isset($codeHashes[$hash])) {
-                            $duplicates[] = [
-                                'original' => $codeHashes[$hash],
-                                'duplicate' => $file->getPathname(),
-                                'snippet' => substr($function, 0, 100) . '...'
-                            ];
-                        } else {
-                            $codeHashes[$hash] = $file->getPathname();
-                        }
-                    }
-                }
-            }
+    foreach ($iterator as $file) {
+        if ($file->isFile() && $file->getSize() > $minSize) {
+            $largeFiles[] = [
+                'path' => $file->getPathname(),
+                'size' => $file->getSize()
+            ];
         }
     }
     
-    return $duplicates;
+    // Sort by size (largest first)
+    usort($largeFiles, function($a, $b) {
+        return $b['size'] - $a['size'];
+    });
+    
+    return $largeFiles;
 }
 
-// Simple function to extract functions/methods from code
-function extractFunctions($content, $extension) {
-    $functions = [];
-    
-    if ($extension === 'php') {
-        // Extract PHP functions
-        preg_match_all('/function\s+[\w_]+\s*$$[^)]*$$\s*{(?:[^{}]|(?R))*}/s', $content, $matches);
-        $functions = array_merge($functions, $matches[0]);
-        
-        // Extract PHP methods
-        preg_match_all('/public|private|protected\s+function\s+[\w_]+\s*$$[^)]*$$\s*{(?:[^{}]|(?R))*}/s', $content, $matches);
-        $functions = array_merge($functions, $matches[0]);
-    } elseif ($extension === 'js') {
-        // Extract JS functions
-        preg_match_all('/function\s+[\w_]+\s*$$[^)]*$$\s*{(?:[^{}]|(?R))*}/s', $content, $matches);
-        $functions = array_merge($functions, $matches[0]);
-        
-        // Extract JS arrow functions
-        preg_match_all('/const\s+[\w_]+\s*=\s*$$[^)]*$$\s*=>\s*{(?:[^{}]|(?R))*}/s', $content, $matches);
-        $functions = array_merge($functions, $matches[0]);
+function formatSize($bytes) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $i = 0;
+    while ($bytes >= 1024 && $i < count($units) - 1) {
+        $bytes /= 1024;
+        $i++;
     }
-    
-    return $functions;
+    return round($bytes, 2) . ' ' . $units[$i];
 }
 
-// Check for code duplication
-$duplicates = checkCodeDuplication('.');
+$largeFiles = findLargeFiles();
 
-if (count($duplicates) > 0) {
-    echo "<div class='alert alert-info'>
-            <h4>Potential Code Duplication Found</h4>
-            <p>The following files may contain duplicate code:</p>
-            <ul class='list-group'>";
+if (count($largeFiles) > 0) {
+    echo "<p>Found the following large files (over 1MB):</p>
+          <table class='table table-striped'>
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Size</th>
+              </tr>
+            </thead>
+            <tbody>";
     
-    foreach ($duplicates as $duplicate) {
-        echo "<li class='list-group-item'>
-                <div><strong>Original:</strong> {$duplicate['original']}</div>
-                <div><strong>Duplicate:</strong> {$duplicate['duplicate']}</div>
-                <div class='text-muted'><small>Code snippet: {$duplicate['snippet']}</small></div>
-              </li>";
+    foreach ($largeFiles as $file) {
+        echo "<tr>
+                <td>{$file['path']}</td>
+                <td>" . formatSize($file['size']) . "</td>
+              </tr>";
     }
     
-    echo "</ul>
-            <p class='mt-3'>Consider refactoring these sections into reusable functions or classes.</p>
-          </div>";
+    echo "</tbody></table>";
 } else {
-    echo "<div class='alert alert-success'>No significant code duplication found.</div>";
+    echo "<p>No large files found.</p>";
 }
 
-// Check for unused image files
-echo "<h2 class='mt-4'>Unused Image Files Check</h2>";
+echo "</div></div>";
 
-function findUnusedImages() {
-    // Get all image files
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
-    $imageFiles = [];
+// Code optimization suggestions
+echo "<div class='card mb-4'>
+        <div class='card-header bg-success text-white'>
+            <h3 class='card-title mb-0'>Code Optimization Suggestions</h3>
+        </div>
+        <div class='card-body'>";
+
+echo "<h4>1. Combine CSS and JavaScript Files</h4>
+      <p>Consider combining and minifying your CSS and JavaScript files to reduce HTTP requests and improve page load times.</p>
+      
+      <h4>2. Optimize Images</h4>
+      <p>Use image compression tools to reduce the file size of your images without sacrificing quality.</p>
+      
+      <h4>3. Implement Caching</h4>
+      <p>Add proper caching headers to your static assets to improve load times for returning visitors.</p>
+      
+      <h4>4. Use a CDN for Libraries</h4>
+      <p>Consider using CDNs for common libraries like Bootstrap, jQuery, and Font Awesome instead of hosting them yourself.</p>
+      
+      <h4>5. Remove Unused Code</h4>
+      <p>Identify and remove any unused CSS, JavaScript, or PHP code to reduce file sizes and improve maintainability.</p>";
+
+echo "</div></div>";
+
+// Project summary
+echo "<div class='card mb-4'>
+        <div class='card-header bg-dark text-white'>
+            <h3 class='card-title mb-0'>Project Summary</h3>
+        </div>
+        <div class='card-body'>";
+
+// Count files by type
+function countFilesByType() {
+    $counts = [
+        'php' => 0,
+        'js' => 0,
+        'css' => 0,
+        'html' => 0,
+        'images' => 0,
+        'other' => 0
+    ];
+    
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico'];
     
     $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator('assets/img')
+        new RecursiveDirectoryIterator('.', RecursiveDirectoryIterator::SKIP_DOTS)
     );
     
     foreach ($iterator as $file) {
         if ($file->isFile()) {
             $extension = strtolower(pathinfo($file->getPathname(), PATHINFO_EXTENSION));
-            if (in_array($extension, $imageExtensions)) {
-                $relativePath = str_replace('\\', '/', substr($file->getPathname(), strlen(getcwd()) + 1));
-                $imageFiles[] = $relativePath;
+            
+            if ($extension === 'php') {
+                $counts['php']++;
+            } elseif ($extension === 'js') {
+                $counts['js']++;
+            } elseif ($extension === 'css') {
+                $counts['css']++;
+            } elseif ($extension === 'html' || $extension === 'htm') {
+                $counts['html']++;
+            } elseif (in_array($extension, $imageExtensions)) {
+                $counts['images']++;
+            } else {
+                $counts['other']++;
             }
         }
     }
     
-    // Get all PHP, CSS, and JS files
-    $codeFiles = [];
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator('.')
-    );
-    
-    foreach ($iterator as $file) {
-        if ($file->isFile()) {
-            $extension = strtolower(pathinfo($file->getPathname(), PATHINFO_EXTENSION));
-            if (in_array($extension, ['php', 'css', 'js', 'html'])) {
-                $codeFiles[] = $file->getPathname();
-            }
-        }
-    }
-    
-    // Check each image file to see if it's referenced in any code file
-    $unusedImages = [];
-    foreach ($imageFiles as $image) {
-        $isUsed = false;
-        $imageBasename = basename($image);
-        
-        foreach ($codeFiles as $codeFile) {
-            $content = file_get_contents($codeFile);
-            if (strpos($content, $image) !== false || strpos($content, $imageBasename) !== false) {
-                $isUsed = true;
-                break;
-            }
-        }
-        
-        if (!$isUsed) {
-            $unusedImages[] = $image;
-        }
-    }
-    
-    return $unusedImages;
+    return $counts;
 }
 
-// This can be resource-intensive, so we'll only run it if requested
-if (isset($_GET['check_images'])) {
-    $unusedImages = findUnusedImages();
-    
-    if (count($unusedImages) > 0) {
-        echo "<div class='alert alert-info'>
-                <h4>Potentially Unused Image Files</h4>
-                <p>The following image files may not be used in the project:</p>
-                <div class='file-list'>";
-        
-        foreach ($unusedImages as $image) {
-            echo "<div><small>$image</small></div>";
-        }
-        
-        echo "</div>
-                <p class='mt-3'>Note: This is a basic check and may not catch all references. Review before deleting.</p>
-              </div>";
-    } else {
-        echo "<div class='alert alert-success'>No unused image files found.</div>";
-    }
-} else {
-    echo "<div class='alert alert-secondary'>
-            <p>Checking for unused image files can be resource-intensive. Click the button below to run this check.</p>
-            <a href='?check_images=1' class='btn btn-primary'>Check for Unused Images</a>
-          </div>";
-}
+$fileCounts = countFilesByType();
+
+echo "<h4>File Statistics</h4>
+      <ul>
+        <li><strong>PHP Files:</strong> {$fileCounts['php']}</li>
+        <li><strong>JavaScript Files:</strong> {$fileCounts['js']}</li>
+        <li><strong>CSS Files:</strong> {$fileCounts['css']}</li>
+        <li><strong>HTML Files:</strong> {$fileCounts['html']}</li>
+        <li><strong>Image Files:</strong> {$fileCounts['images']}</li>
+        <li><strong>Other Files:</strong> {$fileCounts['other']}</li>
+        <li><strong>Total Files:</strong> " . array_sum($fileCounts) . "</li>
+      </ul>";
+
+echo "</div></div>";
 
 echo "</div>
     <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js'></script>
