@@ -60,11 +60,14 @@ $unnecessaryFiles = [
     'login_test.php' => 'Testing file not needed in production',
     'test_login.php' => 'Testing file not needed in production',
     'session_debug.php' => 'Debug file not needed in production',
-    'header_check.php' => 'Debug file not needed in production',
+    'session_check.php' => 'Debug file not needed in production',
     
     // Old versions or backups
     'backend/db_connect.php.bak' => 'Backup file',
-    'backend/process_login.php.bak' => 'Backup file'
+    'backend/process_login.php.bak' => 'Backup file',
+    
+    // Tree file
+    'tree.txt' => 'File structure listing not needed in production'
 ];
 
 // Check if we should actually delete files
@@ -102,7 +105,11 @@ $filesToKeep = [
     'backend/db_connect.php' => 'Main database connection file',
     'backend/process_login.php' => 'Main login processing file',
     'backend/log_activity.php' => 'Activity logging functionality',
-    'backend/logout.php' => 'Logout functionality'
+    'backend/logout.php' => 'Logout functionality',
+    'backend/process_signup.php' => 'User registration functionality',
+    'backend/process_car.php' => 'Car management functionality',
+    'backend/update_user_profile.php' => 'User profile update functionality',
+    'backend/update_password.php' => 'Password update functionality'
 ];
 
 echo "<div class='card mb-4'>
@@ -118,6 +125,57 @@ foreach ($filesToKeep as $file => $reason) {
     } else {
         echo "<div class='text-danger'><strong>$file</strong> - MISSING! - $reason</div>";
     }
+}
+
+echo "</div></div>";
+
+// Check for empty directories
+echo "<div class='card mb-4'>
+        <div class='card-header bg-info text-white'>
+            <h3 class='card-title mb-0'>Empty Directories Check</h3>
+        </div>
+        <div class='card-body file-list'>";
+
+function checkEmptyDirectories($path) {
+    $empty = [];
+    $dirs = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST
+    );
+    
+    foreach ($dirs as $dir) {
+        if ($dir->isDir()) {
+            $isDirEmpty = !(new \FilesystemIterator($dir->getPathname()))->valid();
+            if ($isDirEmpty) {
+                $empty[] = $dir->getPathname();
+            }
+        }
+    }
+    
+    return $empty;
+}
+
+$emptyDirs = checkEmptyDirectories('.');
+if (count($emptyDirs) > 0) {
+    echo "<p>The following directories are empty:</p><ul>";
+    foreach ($emptyDirs as $dir) {
+        echo "<li>$dir</li>";
+    }
+    echo "</ul>";
+    
+    if ($deleteFiles) {
+        echo "<p>Removing empty directories:</p><ul>";
+        foreach ($emptyDirs as $dir) {
+            if (rmdir($dir)) {
+                echo "<li class='text-success'>$dir - Removed</li>";
+            } else {
+                echo "<li class='text-danger'>$dir - Failed to remove</li>";
+            }
+        }
+        echo "</ul>";
+    }
+} else {
+    echo "<p>No empty directories found.</p>";
 }
 
 echo "</div></div>";
@@ -207,7 +265,7 @@ function extractFunctions($content, $extension) {
 }
 
 // Check for code duplication
-$duplicates = checkCodeDuplication('..');
+$duplicates = checkCodeDuplication('.');
 
 if (count($duplicates) > 0) {
     echo "<div class='alert alert-info'>
@@ -228,6 +286,92 @@ if (count($duplicates) > 0) {
           </div>";
 } else {
     echo "<div class='alert alert-success'>No significant code duplication found.</div>";
+}
+
+// Check for unused image files
+echo "<h2 class='mt-4'>Unused Image Files Check</h2>";
+
+function findUnusedImages() {
+    // Get all image files
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+    $imageFiles = [];
+    
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator('assets/img')
+    );
+    
+    foreach ($iterator as $file) {
+        if ($file->isFile()) {
+            $extension = strtolower(pathinfo($file->getPathname(), PATHINFO_EXTENSION));
+            if (in_array($extension, $imageExtensions)) {
+                $relativePath = str_replace('\\', '/', substr($file->getPathname(), strlen(getcwd()) + 1));
+                $imageFiles[] = $relativePath;
+            }
+        }
+    }
+    
+    // Get all PHP, CSS, and JS files
+    $codeFiles = [];
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator('.')
+    );
+    
+    foreach ($iterator as $file) {
+        if ($file->isFile()) {
+            $extension = strtolower(pathinfo($file->getPathname(), PATHINFO_EXTENSION));
+            if (in_array($extension, ['php', 'css', 'js', 'html'])) {
+                $codeFiles[] = $file->getPathname();
+            }
+        }
+    }
+    
+    // Check each image file to see if it's referenced in any code file
+    $unusedImages = [];
+    foreach ($imageFiles as $image) {
+        $isUsed = false;
+        $imageBasename = basename($image);
+        
+        foreach ($codeFiles as $codeFile) {
+            $content = file_get_contents($codeFile);
+            if (strpos($content, $image) !== false || strpos($content, $imageBasename) !== false) {
+                $isUsed = true;
+                break;
+            }
+        }
+        
+        if (!$isUsed) {
+            $unusedImages[] = $image;
+        }
+    }
+    
+    return $unusedImages;
+}
+
+// This can be resource-intensive, so we'll only run it if requested
+if (isset($_GET['check_images'])) {
+    $unusedImages = findUnusedImages();
+    
+    if (count($unusedImages) > 0) {
+        echo "<div class='alert alert-info'>
+                <h4>Potentially Unused Image Files</h4>
+                <p>The following image files may not be used in the project:</p>
+                <div class='file-list'>";
+        
+        foreach ($unusedImages as $image) {
+            echo "<div><small>$image</small></div>";
+        }
+        
+        echo "</div>
+                <p class='mt-3'>Note: This is a basic check and may not catch all references. Review before deleting.</p>
+              </div>";
+    } else {
+        echo "<div class='alert alert-success'>No unused image files found.</div>";
+    }
+} else {
+    echo "<div class='alert alert-secondary'>
+            <p>Checking for unused image files can be resource-intensive. Click the button below to run this check.</p>
+            <a href='?check_images=1' class='btn btn-primary'>Check for Unused Images</a>
+          </div>";
 }
 
 echo "</div>
